@@ -20,7 +20,7 @@ DEFAULT_RULESET = {
         {
             "id": "R001", 
             "name": "Max Occupancy", 
-            "condition": "people_count > 100" 
+            "condition": "people_count > 10" 
             # Handled via Python (100% accurate)
         },
         {
@@ -87,25 +87,11 @@ def _build_prompt(observation: dict, ruleset: dict) -> str:
     else:
         lines.append(f"Raw: {json.dumps(observation)}")
 
-    context = "\n".join(events_text)
+    context = "\n".join(lines)
 
-    # 2. Dynamic Rule Injection
-    # We only adding rules to the prompt if they are relevant to avoid confusing the AI.
-    active_rules = []
-    
-    # Rule 1: Occupancy (Python Check)
-    if max_people > 100:
-        active_rules.append("1. Max Occupancy: More than 100 people detected -> VIOLATION.")
-    
-    # Rule 2 & 3: Visual Checks (Always Active)
-    active_rules.append("2. PPE: If description says 'no helmet', 'no vest', or 'missing PPE' -> VIOLATION.")
-    active_rules.append("3. Violence: If description says 'fighting', 'hitting', or 'punching' -> VIOLATION.")
+    return f"""You are a security system at TreeHacks 2026 hackathon.
 
-    rules_block = "\n".join(active_rules)
-
-    return f"""SYSTEM: You are a strict security guard.
-    
-LOGS:
+CAMERA DATA:
 {context}
 
 YOUR ONLY JOB: Check if each person has a TreeHacks badge.
