@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-VLM Listener — High-Performance Batching Proxy.
-Implements Producer-Consumer architecture to handle high-speed VLM input
-without dropping data or overloading the slow Nemotron reasoning agent.
+VLM Listener — with Data Sanitization & Hallucination Filters.
+Filters out "null" people, fixes fake counts, and dedups frames.
 """
 
 import argparse
@@ -27,37 +26,91 @@ REPORT_DIR = Path("reports")
 REPORT_DIR.mkdir(exist_ok=True)
 
 # BATCH CONFIGURATION
-BATCH_INTERVAL = 2.0  # Seconds to wait to accumulate frames
-MAX_BATCH_SIZE = 15   # Max frames to pack into one Nemotron request
-DEDUPLICATE = True    # If True, identical sequential frames are merged
+BATCH_INTERVAL = 2.0
+MAX_BATCH_SIZE = 15
+DEDUPLICATE = True
 
 # Global Queue
 event_queue = asyncio.Queue()
-
-# Shared async HTTP client
 _client: httpx.AsyncClient | None = None
 _idx = 0
 
-# ── Lifespan (Startup/Shutdown) ─────────────────────────────────────
+# ── Lifespan ────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _client
-    
-    # 1. Setup vLLM Client
     _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
     print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
-    
-    # 2. Start the Background Batch Processor
-    print("⚙️  Starting Background Batch Processor...")
+    print("🧹 Data Sanitizer: ACTIVE (Filtering nulls & fake counts)")
     asyncio.create_task(batch_processor())
-
     yield
-    
-    # Shutdown
     if _client:
         await _client.aclose()
 
 app = FastAPI(title="VLM Batching Proxy", lifespan=lifespan)
+
+# ── Cleaning Logic (New!) ───────────────────────────────────────────
+def _clean_vlm_data(raw_data):
+    """
+    Sanitizes VLM output to remove hallucinations and nulls.
+    Returns CLEANED data (or None if empty/invalid).
+    """
+    # 1. Handle primitive types (None, strings)
+    if not raw_data:
+        return []
+    
+    # If it's a list (common for object detection outputs)
+    if isinstance(raw_data, list):
+        clean_list = []
+        for item in raw_data:
+            cleaned_item = _clean_vlm_data(item)
+            if cleaned_item: # Only keep valid items
+                clean_list.append(cleaned_item)
+        return clean_list
+
+    # If it's a dictionary (a specific person/object)
+    if isinstance(raw_data, dict):
+        # 2. Filter "Ghost" People (Null/Unknown Names)
+        # Adjust these keys based on your VLM's actual output format
+        bad_values = ["null", "unknown", "none", "n/a", ""]
+        
+        name = str(raw_data.get("first_name", "")).lower()
+        badge = str(raw_data.get("badge_color", "")).lower()
+        
+        # Heuristic: If name is null AND badge is unknown -> It's a hallucination. Throw it away.
+        if name in bad_values and badge in bad_values:
+            return None 
+
+        # 3. Clean individual fields
+        clean_obj = {}
+        for k, v in raw_data.items():
+            if str(v).lower() in bad_values:
+                clean_obj[k] = None # Standardize to actual Python None
+            else:
+                clean_obj[k] = v
+        
+        return clean_obj
+
+    return raw_data
+
+def _validate_observation(obs):
+    """
+    Fixes count inconsistencies (e.g., VLM says '1000 people' but list has 1).
+    """
+    if isinstance(obs, list):
+        # If the output is just a list of people, that IS the observation.
+        return obs
+    
+    if isinstance(obs, dict):
+        # Fix people_count if it exists
+        if "people" in obs and isinstance(obs["people"], list):
+            actual_count = len(obs["people"])
+            if "people_count" in obs:
+                # OVERWRITE the hallucinated count with the real count
+                obs["people_count"] = actual_count
+        return obs
+    
+    return obs
 
 # ── Routes ──────────────────────────────────────────────────────────
 @app.post("/v1/chat/completions")
@@ -66,156 +119,125 @@ async def proxy_chat_completions(request: Request):
     body = await request.body()
     ts = datetime.now().strftime("%H:%M:%S")
 
-    # 1. Forward request to vLLM (Cosmos) - The "Producer"
+    # Forward to vLLM
     try:
-        resp = await _client.post(
-            "/v1/chat/completions",
-            content=body,
-            headers={"Content-Type": "application/json"},
-        )
+        resp = await _client.post("/v1/chat/completions", content=body, headers={"Content-Type": "application/json"})
     except Exception as e:
-        print(f"[{ts}] ❌ vLLM unreachable: {e}")
         return Response(content=json.dumps({"error": str(e)}), status_code=502)
 
-    # 2. Extract VLM Response
+    # Extract & Clean
     vlm_text = ""
     try:
         vllm_data = resp.json()
         vlm_text = vllm_data["choices"][0]["message"]["content"]
-    except Exception:
+    except:
         pass
 
-    # 3. Push to Queue (Non-Blocking)
     if vlm_text:
-        # We push a tuple of (timestamp, text_data)
-        event_queue.put_nowait((ts, vlm_text))
-        q_size = event_queue.qsize()
-        if q_size % 10 == 0:
-            print(f"[{ts}] 📥 Buffered frame (Queue size: {q_size})")
+        # Parse -> Clean -> Validate -> Queue
+        raw_obs = _parse_vlm_output(vlm_text)
+        cleaned_obs = _clean_vlm_data(raw_obs)
+        final_obs = _validate_observation(cleaned_obs)
+        
+        # Convert back to JSON string for the queue/deduplicator
+        event_queue.put_nowait((ts, json.dumps(final_obs)))
 
-    return Response(
-        content=resp.content,
-        status_code=resp.status_code,
-        media_type=resp.headers.get("content-type", "application/json"),
-    )
+    return Response(content=resp.content, status_code=resp.status_code, media_type=resp.headers.get("content-type"))
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_passthrough(request: Request, path: str):
     url = f"/{path}"
     body = await request.body()
     try:
-        resp = await _client.request(
-            method=request.method,
-            url=url,
-            content=body,
-            headers={k: v for k, v in request.headers.items() if k.lower() not in ("host", "content-length")},
-        )
+        resp = await _client.request(method=request.method, url=url, content=body, headers={k: v for k, v in request.headers.items() if k.lower() not in ("host", "content-length")})
         return Response(content=resp.content, status_code=resp.status_code, media_type=resp.headers.get("content-type"))
     except Exception as e:
         return Response(content=json.dumps({"error": str(e)}), status_code=502)
 
-# ── Background Worker (The Consumer) ────────────────────────────────
+# ── Batch Processor ─────────────────────────────────────────────────
 async def batch_processor():
-    """
-    Infinite loop that:
-    1. Waits for data in the queue
-    2. Accumulates data for BATCH_INTERVAL seconds
-    3. Deduplicates identical sequential frames
-    4. Sends one consolidated 'Timeline' report to Nemotron
-    """
     last_processed_text = None
     
     while True:
-        # Wait for the first item (don't burn CPU if empty)
         first_item = await event_queue.get()
         batch = [first_item]
         
-        # Now gather any other items that arrive within our interval
-        # or until we hit MAX_BATCH_SIZE
         deadline = asyncio.get_event_loop().time() + BATCH_INTERVAL
         while len(batch) < MAX_BATCH_SIZE:
             timeout = deadline - asyncio.get_event_loop().time()
-            if timeout <= 0:
-                break
+            if timeout <= 0: break
             try:
                 item = await asyncio.wait_for(event_queue.get(), timeout=timeout)
                 batch.append(item)
-            except asyncio.TimeoutError:
-                break
+            except asyncio.TimeoutError: break
         
-        # We now have a batch of raw frames. Let's process them.
         unique_observations = []
         
-        for ts, text in batch:
-            # Parse JSON if possible
-            obs = _parse_vlm_output(text)
-            
-            # Deduplication: If this frame is exactly the same as the last unique one, skip it
-            # (But assume the timestamp updated implicitly)
-            current_sig = json.dumps(obs, sort_keys=True)
-            if DEDUPLICATE and current_sig == last_processed_text:
+        for ts, text_obs in batch:
+            # DEDUPLICATION:
+            # Since we cleaned the data *before* queuing, "null" frames 
+            # became "[]" (empty list). 
+            # If we get 10 frames of "[]", this logic sees them as identical 
+            # and drops 9 of them.
+            if DEDUPLICATE and text_obs == last_processed_text:
                 continue
             
-            last_processed_text = current_sig
+            last_processed_text = text_obs
+            
+            # Don't send empty lists to Nemotron (further reduces load)
+            if text_obs == "[]" or text_obs == "{}":
+                continue
+
             unique_observations.append({
                 "time": ts,
-                "observation": obs
+                "observation": json.loads(text_obs)
             })
 
-        # If everything was a duplicate, we might have nothing to send
         if not unique_observations:
-            print(f"💤 All {len(batch)} frames were duplicates. Skipping check.")
+            # If batch was full of empty/duplicate data, skip compliance check
             continue
 
-        # Construct the "Timeline Observation" for Nemotron
         timeline_obs = {
             "type": "timeline_batch",
             "start_time": unique_observations[0]["time"],
             "end_time": unique_observations[-1]["time"],
-            "event_count": len(unique_observations),
             "events": unique_observations
         }
 
-        # Run Compliance Check (Blocking call in thread)
-        print(f"📦 Processing Batch: {len(batch)} raw -> {len(unique_observations)} unique events")
+        print(f"📦 Batch: {len(batch)} frames -> {len(unique_observations)} valid events")
         asyncio.create_task(_run_compliance_batch(timeline_obs))
-
 
 async def _run_compliance_batch(observation: dict):
     global _idx
-    ts = datetime.now().strftime("%H:%M:%S")
     try:
-        # Run blocking check in thread
         report = await asyncio.to_thread(check_compliance, observation, None)
-
         status = report.get("overall_status", "unknown")
         violations = report.get("violations", [])
         
-        icon = "✅" if status == "compliant" else "🚨"
-        print(f"[{ts}] {icon} BATCH RESULT: {status.upper()} | Violations: {len(violations)}")
-        
+        # Only print violations to keep terminal clean
         if violations:
-             for v in violations:
-                print(f"       ⛔ {v.get('rule', 'Rule')}: {v.get('description', '')[:80]}")
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 🚨 {status.upper()} | {len(violations)} Violations")
+            for v in violations:
+                print(f"   ⛔ {v.get('rule', '?')}: {v.get('description', '')[:80]}")
+        else:
+             print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Compliant")
 
-        # Save to disk
         _idx += 1
         save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
         save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
 
     except Exception as e:
-        print(f"[{ts}] ❌ Batch Check Error: {e}")
+        print(f"❌ Error: {e}")
 
-# ── Helpers ─────────────────────────────────────────────────────────
-def _parse_vlm_output(text: str) -> dict:
+def _parse_vlm_output(text: str):
     try:
         return json.loads(text)
-    except json.JSONDecodeError:
-        cleaned = text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    except:
+        cleaned = text.strip().removeprefix("```json").removeprefix("```").strip()
         try:
             return json.loads(cleaned)
         except:
-            return {"raw_description": text}
+            return {}
 
 def main():
     global VLLM_BASE
@@ -224,10 +246,8 @@ def main():
     parser.add_argument("--vllm-url", type=str, default="http://localhost:8000")
     parser.add_argument("--host", type=str, default="0.0.0.0")
     args = parser.parse_args()
-
     VLLM_BASE = args.vllm_url
     print(f"🚀 Proxy listening on {args.host}:{args.port} -> vLLM {VLLM_BASE}")
-    print(f"⏱️  Batch Interval: {BATCH_INTERVAL}s | Max Batch: {MAX_BATCH_SIZE}")
     uvicorn.run(app, host=args.host, port=args.port, log_level="error")
 
 if __name__ == "__main__":
