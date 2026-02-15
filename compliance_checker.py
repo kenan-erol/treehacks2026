@@ -97,48 +97,72 @@ def load_ruleset(path: str | None) -> dict:
 
 def _build_prompt(observation: dict, ruleset: dict) -> str:
     """
-    Upgraded Prompt: Forces the LLM to identify WHO is breaking the rule.
+    Optimized Prompt: Translates JSON to simple English sentences 
+    so the 4B model doesn't get confused.
     """
     
-    # Extract just the relevant event text
     events_text = []
+    
+    # 1. Translate Events to English
     if "events" in observation:
         for e in observation["events"]:
-            obs_data = e.get("observation", {})
-            # We explicitly label the time to help the LLM sync events
-            events_text.append(f"- Time {e.get('time')}: {json.dumps(obs_data)}")
+            time = e.get("time", "Unknown Time")
+            obs = e.get("observation", {})
+            
+            # Handle List of People
+            people = []
+            if isinstance(obs, dict) and "people" in obs:
+                people = obs["people"]
+            elif isinstance(obs, list):
+                people = obs
+            
+            # Count them precisely
+            count = len(people)
+            names = [p.get("first_name", "Unknown") for p in people if isinstance(p, dict)]
+            names_str = ", ".join(names) if names else "No one"
+            
+            # Create the sentence
+            # "At 21:30:05, I see 1 person: Nate."
+            line = f"- At {time}, I see {count} person(s): {names_str}."
+            events_text.append(line)
+            
+            # Append any specific descriptions if available (for PPE/weapons)
+            # This helps it catch "holding a knife" or "no hard hat"
+            for p in people:
+                if isinstance(p, dict):
+                    desc = p.get("description", "")
+                    if desc:
+                        events_text.append(f"  * Detail: {p.get('first_name', 'Person')} is {desc}")
+
     else:
-        events_text.append(json.dumps(observation))
+        # Fallback for old format
+        events_text.append(f"- Raw Data: {json.dumps(observation)}")
 
     context_str = "\n".join(events_text)
 
-    return f"""SYSTEM: You are a security guard. Analyze the OBSERVATION logs below.
+    # 2. Simplified Ruleset (Caveman Style)
+    return f"""SYSTEM: You are a security guard. Read the LOGS and check for violations.
     
-RULES:
-1. Occupancy: Max 100 people.
-2. Restricted: No people in red zones.
-3. Suspicious: No unattended bags/weapons.
-4. Aggression: No fighting.
-5. PPE: Must wear safety gear (hard hat/vest) in work zones.
-
-INSTRUCTIONS:
-- If the logs are empty or say "null", return "compliant".
-- You MUST identify the NAME of the person involved in the violation.
-- If the name is null/unknown, use "Unknown Person".
-
-OBSERVATION:
+LOGS:
 {context_str}
 
-OUTPUT:
-Return JSON ONLY. Format:
+RULES:
+1. Occupancy: If more than 10 people are listed at once -> VIOLATION.
+2. Restricted: If anyone is in a red zone -> VIOLATION.
+3. Suspicious: If an unattended bag or weapon is seen -> VIOLATION.
+4. Aggression: If fighting/running is described -> VIOLATION.
+5. PPE: If a person is missing a hard hat or vest -> VIOLATION.
+
+INSTRUCTIONS:
+- Only report violations that are CLEARLY described in the LOGS.
+- If the logs say "1 person", do NOT report "Occupancy" violation.
+- Use the exact Name from the logs (e.g., "Nate"). If name is Unknown, use "Unknown".
+
+OUTPUT (JSON ONLY):
 {{
   "overall_status": "compliant" or "non_compliant",
   "violations": [ 
-    {{ 
-      "rule": "Rule Name", 
-      "subject": "Name of Person (or Unknown)", 
-      "description": "Short reason" 
-    }} 
+    {{ "rule": "Rule Name", "subject": "Name", "description": "Reason" }} 
   ]
 }}
 """
