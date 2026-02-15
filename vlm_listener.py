@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-VLM Listener — reverse-proxy with Rate Limiting & Startup Checks.
+VLM Listener — High-Performance Batching Proxy.
+Implements Producer-Consumer architecture to handle high-speed VLM input
+without dropping data or overloading the slow Nemotron reasoning agent.
 """
 
 import argparse
@@ -23,7 +25,14 @@ VLLM_BASE = ""  # Set in main()
 PROXY_PORT = int(os.getenv("PROXY_PORT", "8001"))
 REPORT_DIR = Path("reports")
 REPORT_DIR.mkdir(exist_ok=True)
-COMPLIANCE_BUSY = False
+
+# BATCH CONFIGURATION
+BATCH_INTERVAL = 2.0  # Seconds to wait to accumulate frames
+MAX_BATCH_SIZE = 15   # Max frames to pack into one Nemotron request
+DEDUPLICATE = True    # If True, identical sequential frames are merged
+
+# Global Queue
+event_queue = asyncio.Queue()
 
 # Shared async HTTP client
 _client: httpx.AsyncClient | None = None
@@ -37,25 +46,10 @@ async def lifespan(app: FastAPI):
     # 1. Setup vLLM Client
     _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
     print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
-    print(f"📁 Reports will be saved to {REPORT_DIR.resolve()}")
-
-    # 2. Check Ollama Status
-    print("🔌 Testing connection to Ollama...")
-    try:
-        async with httpx.AsyncClient(timeout=3.0) as ol_client:
-            resp = await ol_client.get("http://localhost:11434/api/tags")
-            if resp.status_code == 200:
-                models = [m['name'] for m in resp.json().get('models', [])]
-                if any("nemotron-mini:4b" in m for m in models):
-                    print("✅ Ollama is ready and 'nemotron-mini:4b' is available.")
-                else:
-                    print("⚠️  WARNING: 'nemotron-mini:4b' not found in Ollama library!")
-                    print("👉 Run: ollama pull nemotron-mini:4b")
-            else:
-                print(f"⚠️  Ollama responded with error: {resp.status_code}")
-    except Exception as e:
-        print(f"❌ Could not reach Ollama: {e}")
-        print("   Ensure 'ollama serve' is running.")
+    
+    # 2. Start the Background Batch Processor
+    print("⚙️  Starting Background Batch Processor...")
+    asyncio.create_task(batch_processor())
 
     yield
     
@@ -63,16 +57,16 @@ async def lifespan(app: FastAPI):
     if _client:
         await _client.aclose()
 
-app = FastAPI(title="VLM Compliance Proxy", lifespan=lifespan)
+app = FastAPI(title="VLM Batching Proxy", lifespan=lifespan)
 
 # ── Routes ──────────────────────────────────────────────────────────
 @app.post("/v1/chat/completions")
 async def proxy_chat_completions(request: Request):
-    global _idx, COMPLIANCE_BUSY
+    global _idx
     body = await request.body()
     ts = datetime.now().strftime("%H:%M:%S")
 
-    # 1. Forward request to vLLM (Cosmos)
+    # 1. Forward request to vLLM (Cosmos) - The "Producer"
     try:
         resp = await _client.post(
             "/v1/chat/completions",
@@ -91,19 +85,13 @@ async def proxy_chat_completions(request: Request):
     except Exception:
         pass
 
-    # 3. Trigger Compliance Check (ONLY IF IDLE)
+    # 3. Push to Queue (Non-Blocking)
     if vlm_text:
-        if COMPLIANCE_BUSY:
-            # Silent skip or minimal log to reduce noise
-            print(f"[{ts}] ⏳ Skipping compliance (busy)...", end="\r") 
-        else:
-            print(f"\n[{ts}] 🔍 VLM Output: {vlm_text[:50]}...")
-            observation = _parse_vlm_output(vlm_text)
-            
-            # Mark as busy and start task
-            COMPLIANCE_BUSY = True
-            asyncio.create_task(_run_compliance_safe(observation, _idx, ts))
-            _idx += 1
+        # We push a tuple of (timestamp, text_data)
+        event_queue.put_nowait((ts, vlm_text))
+        q_size = event_queue.qsize()
+        if q_size % 10 == 0:
+            print(f"[{ts}] 📥 Buffered frame (Queue size: {q_size})")
 
     return Response(
         content=resp.content,
@@ -126,6 +114,98 @@ async def proxy_passthrough(request: Request, path: str):
     except Exception as e:
         return Response(content=json.dumps({"error": str(e)}), status_code=502)
 
+# ── Background Worker (The Consumer) ────────────────────────────────
+async def batch_processor():
+    """
+    Infinite loop that:
+    1. Waits for data in the queue
+    2. Accumulates data for BATCH_INTERVAL seconds
+    3. Deduplicates identical sequential frames
+    4. Sends one consolidated 'Timeline' report to Nemotron
+    """
+    last_processed_text = None
+    
+    while True:
+        # Wait for the first item (don't burn CPU if empty)
+        first_item = await event_queue.get()
+        batch = [first_item]
+        
+        # Now gather any other items that arrive within our interval
+        # or until we hit MAX_BATCH_SIZE
+        deadline = asyncio.get_event_loop().time() + BATCH_INTERVAL
+        while len(batch) < MAX_BATCH_SIZE:
+            timeout = deadline - asyncio.get_event_loop().time()
+            if timeout <= 0:
+                break
+            try:
+                item = await asyncio.wait_for(event_queue.get(), timeout=timeout)
+                batch.append(item)
+            except asyncio.TimeoutError:
+                break
+        
+        # We now have a batch of raw frames. Let's process them.
+        unique_observations = []
+        
+        for ts, text in batch:
+            # Parse JSON if possible
+            obs = _parse_vlm_output(text)
+            
+            # Deduplication: If this frame is exactly the same as the last unique one, skip it
+            # (But assume the timestamp updated implicitly)
+            current_sig = json.dumps(obs, sort_keys=True)
+            if DEDUPLICATE and current_sig == last_processed_text:
+                continue
+            
+            last_processed_text = current_sig
+            unique_observations.append({
+                "time": ts,
+                "observation": obs
+            })
+
+        # If everything was a duplicate, we might have nothing to send
+        if not unique_observations:
+            print(f"💤 All {len(batch)} frames were duplicates. Skipping check.")
+            continue
+
+        # Construct the "Timeline Observation" for Nemotron
+        timeline_obs = {
+            "type": "timeline_batch",
+            "start_time": unique_observations[0]["time"],
+            "end_time": unique_observations[-1]["time"],
+            "event_count": len(unique_observations),
+            "events": unique_observations
+        }
+
+        # Run Compliance Check (Blocking call in thread)
+        print(f"📦 Processing Batch: {len(batch)} raw -> {len(unique_observations)} unique events")
+        asyncio.create_task(_run_compliance_batch(timeline_obs))
+
+
+async def _run_compliance_batch(observation: dict):
+    global _idx
+    ts = datetime.now().strftime("%H:%M:%S")
+    try:
+        # Run blocking check in thread
+        report = await asyncio.to_thread(check_compliance, observation, None)
+
+        status = report.get("overall_status", "unknown")
+        violations = report.get("violations", [])
+        
+        icon = "✅" if status == "compliant" else "🚨"
+        print(f"[{ts}] {icon} BATCH RESULT: {status.upper()} | Violations: {len(violations)}")
+        
+        if violations:
+             for v in violations:
+                print(f"       ⛔ {v.get('rule', 'Rule')}: {v.get('description', '')[:80]}")
+
+        # Save to disk
+        _idx += 1
+        save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
+        save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
+
+    except Exception as e:
+        print(f"[{ts}] ❌ Batch Check Error: {e}")
+
 # ── Helpers ─────────────────────────────────────────────────────────
 def _parse_vlm_output(text: str) -> dict:
     try:
@@ -137,29 +217,6 @@ def _parse_vlm_output(text: str) -> dict:
         except:
             return {"raw_description": text}
 
-async def _run_compliance_safe(observation: dict, idx: int, ts: str):
-    global COMPLIANCE_BUSY
-    try:
-        print(f"[{ts}] ⚖️  Running Compliance Check...")
-        
-        # Run blocking check in thread
-        report = await asyncio.to_thread(check_compliance, observation, None)
-
-        status = report.get("overall_status", "unknown")
-        violations = report.get("violations", [])
-        
-        icon = "✅" if status == "compliant" else "🚨"
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] {icon} RESULT: {status.upper()} | Violations: {len(violations)}")
-        
-        # Save to disk
-        save_path = REPORT_DIR / f"report_{idx:04d}.json"
-        save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
-
-    except Exception as e:
-        print(f"[{ts}] ❌ Error: {e}")
-    finally:
-        COMPLIANCE_BUSY = False
-
 def main():
     global VLLM_BASE
     parser = argparse.ArgumentParser()
@@ -170,6 +227,7 @@ def main():
 
     VLLM_BASE = args.vllm_url
     print(f"🚀 Proxy listening on {args.host}:{args.port} -> vLLM {VLLM_BASE}")
+    print(f"⏱️  Batch Interval: {BATCH_INTERVAL}s | Max Batch: {MAX_BATCH_SIZE}")
     uvicorn.run(app, host=args.host, port=args.port, log_level="error")
 
 if __name__ == "__main__":
