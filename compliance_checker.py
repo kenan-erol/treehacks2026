@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 """
-Compliance Checker — Optimized with Dynamic Rule Filtering.
-Prevents "100 People" hallucinations by removing the rule 
-from the prompt when the Python count confirms it is safe.
+Compliance Checker — LITE VERSION.
+Only checks 3 specific rules to prevent 4B model hallucinations.
 """
 
-import argparse
 import json
 import os
-import sys
-from datetime import datetime
 from pathlib import Path
 import httpx
 
@@ -17,160 +13,126 @@ import httpx
 OLLAMA_BASE = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 NEMOTRON_MODEL = os.getenv("NEMOTRON_MODEL", "nemotron-mini:4b")
 
-# ── Default Ruleset ─────────────────────────────────────────────────
+# ── Lite Ruleset ────────────────────────────────────────────────────
 DEFAULT_RULESET = {
-    "name": "Default Security Ruleset",
+    "name": "Lite Security Rules",
     "rules": [
         {
-            "id": "R001",
-            "name": "Max Occupancy",
-            "condition": "people_count > 100", 
-            # This rule will be HIDDEN from the LLM if count is low
+            "id": "R001", 
+            "name": "Max Occupancy", 
+            "condition": "people_count > 10" 
+            # Handled via Python (100% accurate)
         },
         {
-            "id": "R002",
-            "name": "Restricted Zone Access",
-            "condition": "person detected in restricted zone",
+            "id": "R002", 
+            "name": "PPE Violation", 
+            "condition": "Person missing 'hard hat', 'helmet', or 'vest'",
+            # Visual check
         },
         {
-            "id": "R003",
-            "name": "Suspicious Objects",
-            "condition": "suspicious or unattended object detected",
-        },
-        {
-            "id": "R006",
-            "name": "Aggressive Behavior",
-            "condition": "aggressive or violent behavior detected",
-        },
-        {
-            "id": "R007",
-            "name": "PPE Compliance",
-            "condition": "person in work zone without PPE",
-        },
+            "id": "R003", 
+            "name": "Violence", 
+            "condition": "Person is 'fighting', 'punching', or 'attacking'",
+            # Action check
+        }
     ],
 }
 
-def load_ruleset(path: str | None) -> dict:
-    if path is None: return DEFAULT_RULESET
-    p = Path(path)
-    if not p.exists(): return DEFAULT_RULESET
-    return json.loads(p.read_text())
+def load_ruleset(path):
+    if path and Path(path).exists(): return json.loads(Path(path).read_text())
+    return DEFAULT_RULESET
 
 def _build_prompt(observation: dict, ruleset: dict) -> str:
-    """
-    Builds the prompt, but SMARTLY filters rules based on hard data.
-    """
     events_text = []
-    max_people_seen = 0
+    max_people = 0
     
-    # 1. Parse Events & Count People (Python Side)
+    # 1. Translate JSON to English Sentences
     if "events" in observation:
         for e in observation["events"]:
             time = e.get("time", "Unknown")
             obs = e.get("observation", {})
             
-            # Extract list
+            # Extract People
             people = []
-            if isinstance(obs, dict) and "people" in obs:
-                people = obs["people"]
-            elif isinstance(obs, list):
-                people = obs
+            if isinstance(obs, dict) and "people" in obs: people = obs["people"]
+            elif isinstance(obs, list): people = obs
             
-            # Update Max Count
-            current_count = len(people)
-            if current_count > max_people_seen:
-                max_people_seen = current_count
+            count = len(people)
+            if count > max_people: max_people = count
             
-            # Build Description
-            # Filter out "null" names to prevent "SIGHTING: null" logs
-            valid_names = []
-            for p in people:
-                if isinstance(p, dict):
-                    name = p.get("first_name")
-                    if name and str(name).lower() != "null":
-                        valid_names.append(name)
-                    else:
-                        valid_names.append("Unknown Person")
+            names = [p.get("first_name", "Unknown") for p in people if isinstance(p, dict)]
+            names_str = ", ".join(names) if names else "No one"
             
-            names_str = ", ".join(valid_names) if valid_names else "No one"
-            line = f"- At {time}, I see {len(valid_names)} person(s): {names_str}."
+            line = f"- At {time}, I see {count} person(s): {names_str}."
             events_text.append(line)
             
-            # Add details
+            # Add descriptions (CRITICAL for PPE checking)
             for p in people:
-                if isinstance(p, dict) and p.get("description"):
-                    events_text.append(f"  * Detail: {p.get('first_name','Person')} is {p.get('description')}")
+                if isinstance(p, dict):
+                    name = p.get("first_name", "Person")
+                    desc = p.get("description", "standing still")
+                    events_text.append(f"  * Detail: {name} is {desc}")
+
     else:
-        events_text.append(f"- Data: {json.dumps(observation)}")
+        events_text.append(f"Raw Data: {json.dumps(observation)}")
 
-    context_str = "\n".join(events_text)
+    context = "\n".join(events_text)
 
-    # 2. Dynamic Rule Filtering (The Fix!)
-    # If Python counts 1 person, we DO NOT tell the LLM about the "Max 100" rule.
-    # It cannot violate a rule it doesn't know exists.
-    active_rules_text = []
-    for r in ruleset["rules"]:
-        # Special handling for Occupancy
-        if "Occupancy" in r["name"]:
-            if max_people_seen > 100:
-                # Only show this rule if we are actually over/near the limit
-                active_rules_text.append(f"- {r['name']}: {r['condition']}")
-        else:
-            # Show all other rules
-            active_rules_text.append(f"- {r['name']}: {r['condition']}")
+    # 2. Dynamic Rule Injection
+    # We only adding rules to the prompt if they are relevant to avoid confusing the AI.
+    active_rules = []
+    
+    # Rule 1: Occupancy (Python Check)
+    if max_people > 10:
+        active_rules.append("1. Max Occupancy: More than 10 people detected -> VIOLATION.")
+    
+    # Rule 2 & 3: Visual Checks (Always Active)
+    active_rules.append("2. PPE: If description says 'no helmet', 'no vest', or 'missing PPE' -> VIOLATION.")
+    active_rules.append("3. Violence: If description says 'fighting', 'hitting', or 'punching' -> VIOLATION.")
 
-    rules_str = "\n".join(active_rules_text)
+    rules_block = "\n".join(active_rules)
 
-    # 3. Final Prompt
-    return f"""SYSTEM: You are a security guard. Read the LOGS and check for violations.
-
+    return f"""SYSTEM: You are a strict security guard.
+    
 LOGS:
-{context_str}
+{context}
 
-ACTIVE RULES:
-{rules_str}
+RULES:
+{rules_block}
 
 INSTRUCTIONS:
-- Only report violations based on the ACTIVE RULES above.
-- If a rule is not listed, do not check for it.
-- Use the exact Name from the logs.
+- You must find a MATCH in the "Detail" lines to report a violation.
+- If the logs do not explicitly describe a missing helmet/vest or fighting, return "compliant".
+- Do not assume restricted zones exists.
+- Do not assume bags are suspicious.
 
 OUTPUT (JSON ONLY):
 {{
   "overall_status": "compliant" or "non_compliant",
-  "violations": [ {{ "rule": "Rule Name", "subject": "Name", "description": "Reason" }} ]
+  "violations": [ {{ "rule": "PPE" or "Violence", "subject": "Name", "description": "Quote from log" }} ]
 }}
 """
 
-def check_compliance(observation: dict, ruleset_path: str | None = None) -> dict:
+def check_compliance(observation: dict, ruleset_path: str = None) -> dict:
     ruleset = load_ruleset(ruleset_path)
-    
-    # Build the smart prompt
     prompt = _build_prompt(observation, ruleset)
 
-    # ... (Rest of the HTTP logic is identical) ...
     try:
-        with httpx.Client(timeout=180.0) as client:
+        with httpx.Client(timeout=60.0) as client:
             resp = client.post(
                 f"{OLLAMA_BASE}/api/generate",
                 json={
-                    "model": NEMOTRON_MODEL, 
-                    "prompt": prompt, 
+                    "model": NEMOTRON_MODEL,
+                    "prompt": prompt,
                     "stream": False,
-                    "options": {"temperature": 0.0, "num_predict": 1024}
+                    "options": {"temperature": 0.0, "num_predict": 512}
                 }
             )
             raw = resp.json().get("response", "")
+            
+            # Clean Markdown
+            cleaned = raw.strip().removeprefix("```json").removeprefix("```").strip()
+            return json.loads(cleaned)
+
     except Exception as e:
-        return _error_report(str(e))
-
-    try:
-        cleaned = raw.strip().removeprefix("```json").removeprefix("```").strip()
-        report = json.loads(cleaned)
-    except:
-        report = {"overall_status": "error", "violations": []}
-
-    return report
-
-def _error_report(msg):
-    return {"overall_status": "error", "error": msg, "violations": []}
+        return {"overall_status": "error", "error": str(e), "violations": []}
