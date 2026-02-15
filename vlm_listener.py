@@ -239,23 +239,63 @@ async def batch_processor():
 async def _run_compliance_batch(observation: dict):
     global _idx
     ts = datetime.now().strftime("%H:%M:%S")
-    try:
-        report = await asyncio.to_thread(check_compliance, observation, None)
+    
+    # 1. Extract all unique names seen in this batch for the report
+    names_seen = set()
+    if "events" in observation:
+        for event in observation["events"]:
+            # Handle both list-of-objects and dict-wrapper formats
+            obs_data = event.get("observation", [])
+            people_list = obs_data if isinstance(obs_data, list) else obs_data.get("people", [])
+            
+            for p in people_list:
+                # Combine First/Last if available, or just First
+                f_name = p.get("first_name")
+                l_name = p.get("last_name")
+                if f_name:
+                    full_name = f"{f_name} {l_name}" if l_name else f_name
+                    names_seen.add(full_name)
 
+    try:
+        # 2. Run Compliance Check
+        # We use asyncio.to_thread because the checker is blocking synchronous code
+        report = await asyncio.to_thread(check_compliance, observation, None)
+        
+        # 3. Process Results
         status = report.get("overall_status", "unknown")
         violations = report.get("violations", [])
         
-        if violations:
-            print(f"[{ts}] 🚨 {status.upper()} | {len(violations)} Violations")
-            for v in violations:
-                # Extract the new 'subject' field
-                who = v.get('subject', 'Unknown')
-                rule = v.get('rule', 'Rule')
-                desc = v.get('description', '')[:60]
-                
-                # Print: [Kenan Erol] ⛔ PPE: Missing hard hat
-                print(f"       👤 [{who}] ⛔ {rule}: {desc}")
+        # Create a quick lookup for violators
+        # Structure: {"Rohan": ["Missing hard hat", "Fighting"]}
+        violator_map = {}
+        for v in violations:
+            subject = v.get("subject", "Unknown")
+            reason = f"{v.get('rule')}: {v.get('description')}"
+            if subject not in violator_map:
+                violator_map[subject] = []
+            violator_map[subject].append(reason)
 
+        # 4. PRINT THE REPORT (The Fix)
+        print(f"[{ts}] 📋 Compliance Report:")
+        
+        if not names_seen:
+            print("       (No identifiable people in this batch)")
+        
+        for name in names_seen:
+            if name in violator_map:
+                # Non-Compliant Case
+                reasons = "; ".join(violator_map[name])
+                print(f"       ❌ {name} - NON-COMPLIANT - {reasons}")
+            else:
+                # Compliant Case
+                # If the overall batch is compliant, everyone is compliant
+                if status == "compliant":
+                    print(f"       ✅ {name} - COMPLIANT - Checks passed (PPE/Violence)")
+                else:
+                    # Edge case: Status is non-compliant, but this specific person wasn't named
+                    print(f"       ✅ {name} - COMPLIANT - No violations linked to this person")
+
+        # 5. Save Report
         _idx += 1
         save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
         save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))

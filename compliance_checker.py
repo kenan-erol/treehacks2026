@@ -20,7 +20,7 @@ DEFAULT_RULESET = {
         {
             "id": "R001", 
             "name": "Max Occupancy", 
-            "condition": "people_count > 10" 
+            "condition": "people_count > 100" 
             # Handled via Python (100% accurate)
         },
         {
@@ -83,8 +83,8 @@ def _build_prompt(observation: dict, ruleset: dict) -> str:
     active_rules = []
     
     # Rule 1: Occupancy (Python Check)
-    if max_people > 10:
-        active_rules.append("1. Max Occupancy: More than 10 people detected -> VIOLATION.")
+    if max_people > 100:
+        active_rules.append("1. Max Occupancy: More than 100 people detected -> VIOLATION.")
     
     # Rule 2 & 3: Visual Checks (Always Active)
     active_rules.append("2. PPE: If description says 'no helmet', 'no vest', or 'missing PPE' -> VIOLATION.")
