@@ -1,0 +1,47 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:30:13",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Reduce the number of people or adjust zones."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons are nearby without badges.",
+        "recommendation": "Ensure only authorized personnel with proper badges enter the zone."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Unattended bags, weapons, or unknown packages nearby.",
+        "recommendation": "Inspect unattended items and ensure they are not suspicious."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Persons exhibiting fighting, running, or aggressive gestures nearby.",
+        "recommendation": "Intervene and ensure the persons are not aggressive."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE.",
+        "recommendation": "Inspect and ensure all personnel are wearing the correct PPE."
+      }
+    ],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant with several security rules. Please address the following issues: \n1. Reduce the number of people in a single zone or adjust zones.\n2. Ensure only authorized personnel with proper badges enter the zone.\n3. Inspect unattended items and ensure they are not suspicious.\n4. Intervene and ensure persons exhibiting fighting, running, or aggressive gestures are not aggressive."
+  }
+}

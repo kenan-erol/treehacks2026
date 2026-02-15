@@ -1,0 +1,22 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"J\",\n    \"last_name\": \"Hacker\",\n    \"affiliation\": \"HACKER\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"M\",\n    \"last_name\": \"Hacker\",\n    \""
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:44:56",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Person with a black badge is nearby.",
+        "recommendation": "Immediate evacuation of the restricted zone."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 90,
+    "summary": "The observation violates rule R002 (Restricted Zone Access) due to a person with a black badge being nearby. The risk score is high as the restricted zone should be evacuated immediately."
+  }
+}

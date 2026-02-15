@@ -1,0 +1,46 @@
+{
+  "obs": [
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Tran",
+      "last_name": "Tran",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Tran",
+      "last_name": "Tran",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:26:17",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than or equal to 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons are nearby without proper badges.",
+        "recommendation": "Ensure that only persons with green, light blue, dark blue, purple, orange, or black badges enter the restricted zone."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 90,
+    "summary": "The observation is non-compliant due to exceeding the maximum occupancy limit and unauthorized persons being nearby without proper badges. This poses a high risk of security breaches."
+  }
+}

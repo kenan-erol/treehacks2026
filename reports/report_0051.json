@@ -1,0 +1,47 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:28:37",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Reduce the number of people or adjust zones."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons are nearby without proper badges.",
+        "recommendation": "Ensure all persons have the correct badges."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect unattended items."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Fighting, running, or aggressive gestures.",
+        "recommendation": "Stop any fighting and ensure no one is being aggressive."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE.",
+        "recommendation": "Check all persons have hard hats and vests."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "The observation is non-compliant with several rules. Please check for any additional violations or ensure the correct badges are in use."
+  }
+}

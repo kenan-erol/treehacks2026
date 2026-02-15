@@ -1,0 +1,24 @@
+{
+  "obs": {
+    "people_count": 1,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": false,
+        "description": "A man with short brown hair, glasses, and a light beard is wearing a black jacket with a blue and white patterned design. He is speaking and looking slightly downward."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "No Badge",
+        "subject": "Person 1",
+        "description": "facing camera, no badge"
+      }
+    ]
+  },
+  "source": "laptop_sync"
+}

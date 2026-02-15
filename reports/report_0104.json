@@ -1,0 +1,54 @@
+{
+  "obs": [
+    {
+      "first_name": "Nate",
+      "last_name": "Garcia",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:43:01",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "No persons should be nearby unless they have badges of colors green, light blue, dark blue, purple, orange.",
+        "recommendation": "Ensure that only authorized personnel are present."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Flag unattended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect all unattended items."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Flag any fighting, running, or aggressive gestures.",
+        "recommendation": "Implement a zero-tolerance policy for aggressive behavior."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE (hard hat, vest).",
+        "recommendation": "Ensure that all personnel are wearing the correct PPE."
+      }
+    ],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant due to a violation of rule R001. The number of people in the zone exceeds the maximum limit of 1000. This poses a high risk as it may lead to overcrowding and potential safety issues."
+  }
+}

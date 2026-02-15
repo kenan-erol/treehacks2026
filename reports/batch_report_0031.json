@@ -1,0 +1,26 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "00:14:16",
+    "end_time": "00:14:16",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "00:14:16",
+        "observation": [
+          {
+            "first_name": "Jesse",
+            "last_name": "Hoffman",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "error",
+    "error": "Expecting ',' delimiter: line 14 column 4 (char 289)",
+    "violations": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "observation": [
+    {
+      "first_name": "unknown",
+      "last_name": "unknown",
+      "affiliation": "unknown",
+      "badge_color": "unknown"
+    }
+  ],
+  "compliance_report": {
+    "overall_status": "error",
+    "timestamp": "2026-02-14T17:40:20.303666",
+    "error": "Ollama timed out after 180s. Model may be loading for the first time. Try again or check: ollama ps",
+    "violations": [],
+    "risk_score": -1,
+    "summary": "Compliance check failed: Ollama timed out after 180s. Model may be loading for the first time. Try again or check: ollama ps"
+  }
+}

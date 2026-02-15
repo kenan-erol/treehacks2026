@@ -1,0 +1,34 @@
+{
+  "obs": [
+    {
+      "first_name": "Terry",
+      "last_name": "Huang",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:39:28",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": 5,
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Terry Huang is in the restricted zone without a badge of color green or light blue.",
+        "recommendation": "Check Terry Huang's badge and update his status."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": 1,
+        "rule": "Max Occupancy",
+        "status": "non_compliant",
+        "notes": "The number of people in the scene is more than 1000."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "Terry Huang, a HACKER with black badge, is in a restricted zone without proper authorization. The risk score indicates a high level of security breach and requires immediate attention."
+  }
+}

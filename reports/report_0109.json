@@ -1,0 +1,13 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"Jesse\",\n    \"last_name\": \"Hoffman\",\n    \"affiliation\": \"HACKER\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jesse\",\n    \"last_name\": \"Hoff"
+  },
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:44:15\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"severity\": \"critical\",\n      \"description\": \"Jesse Hoffman is wearing a black badge which is not allowed in the restricted zone.\",\n      \"recommendation\": \"Remove Jesse Hoffman from the restricted zone.\"\n    }\n  ],\n  \"compliant_rules\": [],\n  \"risk_score\": 80,\n  \"summary\": \"The observation violates rule R002 as Jesse Hoffman is wearing a black badge in a restricted zone. This poses a high risk to security and should be addressed immediately.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:44:22.653766",
+    "violations": [],
+    "risk_score": 0
+  }
+}

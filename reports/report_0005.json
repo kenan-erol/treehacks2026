@@ -1,0 +1,98 @@
+{
+  "obs": [
+    {
+      "first_name": "Aarav",
+      "last_name": "Sharma",
+      "affiliation": "Cornell",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Cornell",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Pranjal",
+      "last_name": "Pandey",
+      "affiliation": "Cornell",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Pranjal",
+      "last_name": "Pandey",
+      "affiliation": "Cornell",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "Pranjal",
+      "last_name": "Pandey",
+      "affiliation": "Cornell",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Pranjal",
+      "last_name": "Pandey",
+      "affiliation": "Cornell",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Pranjal",
+      "last_name": "Pandey",
+      "affiliation": "Cornell",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:07:58",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons should not be nearby unless they have badges of colors green, light blue, dark blue, purple, orange.",
+        "recommendation": "Ensure that only authorized personnel are present."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Flag unattended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect unattended items."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Flag any fighting, running, or aggressive gestures.",
+        "recommendation": "Stop any aggressive behavior."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE (hard hat, vest).",
+        "recommendation": "Ensure that all personnel are wearing the correct PPE."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "<not applicable>",
+        "rule": "<not applicable>",
+        "status": "non_compliant",
+        "notes": "None of these rules apply to this observation data."
+      }
+    ],
+    "risk_score": 80,
+    "summary": "The scene observation is non-compliant due to the presence of more than 1000 people in a single zone at any time. This poses a high risk as it may lead to overcrowding and potential safety issues."
+  }
+}

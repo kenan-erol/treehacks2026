@@ -1,0 +1,11 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:24:07\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Attended bags and weapons nearby.\",\n      \"recommendation\": \"Remove unattended bags, weapons.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"severity\": \"critical\",\n      \"description\": \"Person running in the background.\",\n      \"recommendation\": \"Stop aggressive behavior.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"\",\n      \"rule\": \"\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"\"\n    },\n    {\n      \"rule_id\": \"R001, R002, R004, R005, R007\",\n      \"rule\": \"Max Occupancy, Restricted Zone Access, PPE Compliance, No Smoking, No Alcohol\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"\"\n    }\n  ],\n  \"risk_score\": 89,\n  \"summary\": \"The observation is non-compliant due to the presence of unattended bags and weapons in a restricted zone. The risk score indicates a high level of risk.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:24:17.028152",
+    "violations": [],
+    "risk_score": 0
+  }
+}

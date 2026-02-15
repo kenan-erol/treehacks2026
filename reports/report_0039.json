@@ -1,0 +1,11 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:25:52\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Bag nearby.\",\n      \"recommendation\": \"Remove bag.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"severity\": \"critical\",\n      \"description\": \"Person running in the background.\",\n      \"recommendation\": \"Stop person from running.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"\",\n      \"rule\": \"\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"\"\n    },\n    {\n      \"rule_id\": \"R001, R002, R004-R007\",\n      \"rule\": \"Max Occupancy, Restricted Zone Access, PPE Compliance\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The observation is non-compliant due to the presence of a suspicious object (bag) and aggressive behavior. The risk score indicates a high level of risk.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:25:58.803845",
+    "violations": [],
+    "risk_score": 0
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:08:52\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Attended bags and weapons were observed.\",\n      \"recommendation\": \"Remove unattended bags and weapons.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"severity\": \"critical\",\n      \"description\": \"A person was seen running aggressively towards a restricted zone.\",\n      \"recommendation\": \"Stop the person and investigate further.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"The number of people in the scene is unknown.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"status\": \"violated\",\n      \"notes\": \"A person was seen near a restricted zone without proper authorization.\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The scene contains multiple violations of security rules. A risk assessment should be performed to determine the severity and impact on operations.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:09:06.732683",
+    "violations": [],
+    "risk_score": 0
+  }
+}

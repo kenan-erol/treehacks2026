@@ -1,0 +1,29 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "21:41:20",
+    "end_time": "21:41:20",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "21:41:20",
+        "observation": [
+          {
+            "first_name": "Tree",
+            "last_name": "Hacks",
+            "affiliation": "HACKER",
+            "badge_color": "black"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "error",
+    "raw_response": " {\n  \"overall_status\": \"non_compliant\",\n  \"violations\": [\n    {\n      \"rule\": \"Restricted\",\n      \"subject\": \"Unknown Person\",\n      \"description\": \"Person found in red zone.\"\n    },\n    {\n      \"rule\": \"Aggression\",\n      \"subject\": \"Unknown Person\",\n      \"description\": \"Fighting detected.\"\n    }\n  ]",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T21:41:32.214516",
+    "violations": [],
+    "risk_score": 0
+  }
+}

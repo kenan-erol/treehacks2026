@@ -1,0 +1,73 @@
+{
+  "obs": [
+    {
+      "first_name": "Ry",
+      "last_name": "Wang",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Ry",
+      "last_name": "Wang",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:15:42",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than or equal to 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons are nearby without proper badges.",
+        "recommendation": "Ensure only authorized persons with green, light blue, dark blue, purple, orange, or black badges enter the restricted zone."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Unattended bags and weapons found.",
+        "recommendation": "Ensure all unattended items are removed."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Persons exhibiting aggressive behavior.",
+        "recommendation": "Report and address the issue immediately."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "status": "compliant",
+        "notes": "All persons in work zones are wearing required PPE (hard hat, vest)."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "The observation is non-compliant due to the presence of unauthorized personnel and unattended items. The risk score indicates a high level of risk."
+  }
+}

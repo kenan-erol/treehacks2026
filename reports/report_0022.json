@@ -1,0 +1,77 @@
+{
+  "obs": [
+    {
+      "first_name": "Randy",
+      "last_name": "Kang",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Tran",
+      "affiliation": "organizer",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Dustin",
+      "last_name": "Huang",
+      "affiliation": "organizer",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "Ji",
+      "last_name": "Chen",
+      "affiliation": "organizer",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Tran",
+      "affiliation": "organizer",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Ji",
+      "last_name": "Chen",
+      "affiliation": "organizer",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:17:08",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags and weapons present.",
+        "recommendation": "Remove unattended bags and weapons."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Running and aggressive gestures observed.",
+        "recommendation": "Stop running and cease aggressive behavior."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "",
+        "rule": "",
+        "status": "non_compliant",
+        "notes": ""
+      },
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "status": "violated",
+        "notes": "Over 1000 people observed in a single zone."
+      }
+    ],
+    "risk_score": 95,
+    "summary": "The observation is non-compliant due to over 1000 people being present and running aggressive behavior. Recommend removing unattended bags and weapons and stopping the running individuals from exhibiting aggressive behavior."
+  }
+}

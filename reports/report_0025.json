@@ -1,0 +1,24 @@
+{
+  "obs": [
+    {
+      "first_name": "Evan",
+      "last_name": "Huang",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Evan",
+      "last_name": "Huang",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:18:21\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Unattended bags present in the scene.\",\n      \"recommendation\": \"Remove unattended bags from the scene.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"severity\": \"high\",\n      \"description\": \"Evan Huang, organizer, is seen gesturing aggressively towards another person.\",\n      \"recommendation\": \"Escort Evan Huang to a safe location and document the incident.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"The number of people in the scene exceeds 1000.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"status\": \"violated\",\n      \"notes\": \"Evan Huang, organizer, is seen with a badge of color black in the scene. This violates rule R002.\"\n    },\n    {\n      \"rule_id\": \"R007\",\n      \"rule\": \"PPE Compliance\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"Evan Huang, organizer, is not wearing required PPE (hard hat) in the scene. This violates rule R007.\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The observation contains multiple violations of security rules and poses a high risk to personnel safety. Evacuate the scene immediately and report this incident to management.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:18:34.729930",
+    "violations": [],
+    "risk_score": 0
+  }
+}

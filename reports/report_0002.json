@@ -1,0 +1,57 @@
+{
+  "obs": [
+    {
+      "first_name": "TreeHacks",
+      "last_name": "Black",
+      "affiliation": "",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "TreeHacks",
+      "last_name": "Green",
+      "affiliation": "",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "TreeHacks",
+      "last_name": "Light Blue",
+      "affiliation": "",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "TreeHacks",
+      "last_name": "Dark Blue",
+      "affiliation": "",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "TreeHacks",
+      "last_name": "Orange",
+      "affiliation": "",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "TreeHacks",
+      "last_name": "Purple",
+      "affiliation": "",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:06:49",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Unattended bags and weapons present.",
+        "recommendation": "Remove unattended bags and weapons."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant with rule R003 (Suspicious Objects) due to unattended bags and weapons present. The risk score indicates a high level of risk."
+  }
+}

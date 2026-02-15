@@ -1,0 +1,22 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"Amit\",\n    \"last_name\": \"Sharma\",\n    \"affiliation\": \"HACKER\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Nikita\",\n    \"last_name\": \"Goyal"
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:40:57",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Amit Sharma is in the restricted zone without a badge of color green.",
+        "recommendation": "Remove Amit Sharma from the restricted zone and ensure he has a valid badge."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant with rule R002 as Amit Sharma is in the restricted zone without a valid badge. The risk score indicates a high level of risk."
+  }
+}

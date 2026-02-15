@@ -1,0 +1,23 @@
+{
+  "obs": [
+    {
+      "first_name": "Unknown",
+      "badge_visible": false,
+      "facing_camera": true,
+      "description": "A young adult male with short brown hair, glasses, and a light beard. He is wearing a black shirt under a blue and white patterned jacket with a logo on the chest. He has a necklace with a pendant. He is speaking and looking directly at the camera, with slight head movements and blinking. He is positioned centrally in the frame, slightly leaning forward, with his upper body visible. The background includes a computer monitor, a table with items, and another person partially visible behind him on the left side of the frame, who appears to be seated and working at a desk. The lighting is bright and even, suggesting an indoor environment with overhead lights, and the setting appears to be a tech-related event or workspace with visible equipment and signage in the background, including a sign that reads \"TREE HACKS\" and \"2026.\"",
+      "action": "Speaking to the camera, making slight head movements and blinking."
+    },
+    {
+      "first_name": "Unknown",
+      "badge_visible": false,
+      "facing_camera": false,
+      "description": "A person with short hair, wearing a dark shirt, seated at a desk and working on a computer. Only part of their head and shoulders are visible in the background on the left side of the frame. They are facing away from the camera, looking downward at the computer screen. The background includes a computer monitor, a table with items, and another person partially visible behind him on the left side of the frame, who appears to be seated and working at a desk. The lighting is bright and even, suggesting an indoor environment with overhead lights, and the setting appears to be a tech-related event or workspace with visible equipment and signage in the background, including a sign that reads \"TREE HACKS\" and \"2026.\"",
+      "action": "Working at a computer, facing away from the camera."
+    }
+  ],
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

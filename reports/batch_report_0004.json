@@ -1,0 +1,18 @@
+{
+  "obs": {
+    "people_count": 1,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": true,
+        "description": "A person wearing glasses and a blue and white patterned jacket has a green PCB badge shaped like a Christmas tree with \"TREE HACKS\" and \"2026\" text, along with rocket, star, and planet designs, a QR code, LEDs, and USB-C connectors, worn around their neck."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

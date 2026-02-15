@@ -1,0 +1,49 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"Amanda\",\n    \"last_name\": \"Liu\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Arianna\",\n    \"last_name\": \"M\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Avery\",\n    \"last_name\": \"L\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Dylan\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Evan\",\n    \"last_name\": \"C\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Hannah\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Hannah\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jaden\",\n    \"last_name\": \"M\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jaden\",\n    \"last_name\": \"M\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jaden\",\n    \"last_name\": \"M\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jaden\",\n    \"last_name\": \"M\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jaden\",\n    \"last_name\": \"M\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jaden\",\n    \"last_name\": \"M\",\n    \"affiliation\": \"Stanford\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jaden\",\n   "
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:10:37",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than or equal to 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "No persons should be nearby unless they have badges of colors green, light blue, dark blue, purple, orange.",
+        "recommendation": "Ensure that only authorized personnel are present."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Flag unattended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect unattended items."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Flag any fighting, running, or aggressive gestures.",
+        "recommendation": "Stop any aggressive behavior."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE (hard hat, vest).",
+        "recommendation": "Ensure that all personnel are wearing the necessary PPE."
+      }
+    ],
+    "risk_score": 90,
+    "summary": "The observation is non-compliant with several security rules. The risk score indicates a high level of risk to safety and security."
+  }
+}

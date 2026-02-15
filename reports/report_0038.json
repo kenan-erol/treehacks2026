@@ -1,0 +1,11 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:25:46\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Attended bags and weapons nearby.\",\n      \"recommendation\": \"Remove unattended bags, weapons or unknown packages.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"severity\": \"critical\",\n      \"description\": \"Person running and aggressive gestures nearby.\",\n      \"recommendation\": \"Stop the person from running or displaying aggressive behavior.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"More than 1000 people in a single zone at any time.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"Person nearby without proper badges.\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The observation is non-compliant due to the presence of more than 1000 people in a single zone and an individual displaying aggressive behavior. Additional risks include unattended bags and weapons nearby.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:25:52.479028",
+    "violations": [],
+    "risk_score": 0
+  }
+}

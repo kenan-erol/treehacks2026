@@ -1,0 +1,29 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"Jared\",\n    \"last_name\": \"Huang\",\n    \"affiliation\": \"NVIDIA\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Rishav\",\n    \"last_name\": \"Chakraborty\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Sachin\",\n    \"last_name\": \"Ghosh\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Anand\",\n    \"last_name\": \"Prakash\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Yash\",\n    \"last_name\": \"Gupta\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Siddharth\",\n    \"last_name\": \"Gupta\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Arpan\",\n    \"last_name\": \"Chakraborty\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Siddharth\",\n    \"last_name\": \"Srivastava\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Shivam\",\n    \"last_name\": \"Rastogi\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Anshul\",\n    \"last_name\": \"Kumar\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Arjun\",\n    \"last_name\": \"Kumar\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Siddharth\",\n    \"last_name\": \"Srivastava\",\n    \"affiliation\": \"Cornell\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Anshul\",\n    \"last_name"
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:12:30",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than or equal to 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "No persons should be nearby unless they have badges of colors green, light blue, dark blue, purple, orange.",
+        "recommendation": "Ensure that only authorized personnel are present."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 90,
+    "summary": "The observation is non-compliant due to the presence of more than 1000 people in a single zone at any time. Authorized personnel should be limited to only those with green, light blue, dark blue, purple, orange badges."
+  }
+}

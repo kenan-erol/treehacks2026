@@ -1,0 +1,18 @@
+{
+  "obs": [
+    {
+      "first_name": "Nate",
+      "last_name": "L",
+      "affiliation": "TreeHacks",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:06:07\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"severity\": \"high\",\n      \"description\": \"More than 1000 people in a single zone at any time.\",\n      \"recommendation\": \"Reduce the number of people or adjust zones.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"severity\": \"critical\",\n      \"description\": \"Person with a black badge nearby.\",\n      \"recommendation\": \"Verify the person's identity and adjust access accordingly.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R003, R006\",\n      \"rule\": \"Suspicious Objects / Aggressive Behavior\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"No violations found.\"\n    },\n    {\n      \"rule_id\": \"R007\",\n      \"rule\": \"PPE Compliance\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"Person in work zone without required PPE (hard hat, vest).\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The observation is non-compliant due to the presence of more than 1000 people and a person with a black badge. The risk score indicates a high level of risk.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:06:22.701104",
+    "violations": [],
+    "risk_score": 0
+  }
+}

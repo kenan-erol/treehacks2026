@@ -1,0 +1,33 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "21:39:22",
+    "end_time": "21:39:22",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "21:39:22",
+        "observation": [
+          {
+            "first_name": "Derrick",
+            "last_name": "Huang",
+            "affiliation": "HACKER",
+            "badge_color": "dark blue"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "Occupancy",
+        "subject": "Unknown Person",
+        "description": "More than 10 people in work zone."
+      }
+    ],
+    "timestamp": "2026-02-14T21:39:33.236277",
+    "risk_score": 0
+  }
+}

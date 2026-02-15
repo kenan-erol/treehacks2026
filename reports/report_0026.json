@@ -1,0 +1,11 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:18:35\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"severity\": \"high\",\n      \"description\": \"More than 1000 people in a single zone at any time.\",\n      \"recommendation\": \"Reduce the number of people or adjust zones.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"severity\": \"critical\",\n      \"description\": \"Persons are nearby without proper badges.\",\n      \"recommendation\": \"Ensure all persons have the correct badges.\"\n    },\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Unattended bags, weapons, or unknown packages nearby.\",\n      \"recommendation\": \"Remove unattended items.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"severity\": \"high\",\n      \"description\": \"Persons are fighting, running, or exhibiting aggressive gestures.\",\n      \"recommendation\": \"Stop the behavior and address it with management.\"\n    },\n    {\n      \"rule_id\": \"R007\",\n      \"rule\": \"PPE Compliance\",\n      \"severity\": \"medium\",\n      \"description\": \"Some persons in work zones do not have required PPE.\",\n      \"recommendation\": \"Ensure all persons wear required PPE.\"\n    }\n  ],\n  \"risk_score\": 80,\n  \"summary\": \"The scene observation is non-compliant with several security rules. The risk score indicates a high level of risk to the facility and its occupants.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:18:52.906514",
+    "violations": [],
+    "risk_score": 0
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "00:03:11",
+    "end_time": "00:03:11",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "00:03:11",
+        "observation": [
+          {
+            "first_name": "N/A",
+            "last_name": "N/A",
+            "affiliation": "N/A",
+            "badge_color": "uncertain"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  }
+}

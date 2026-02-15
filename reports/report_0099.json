@@ -1,0 +1,34 @@
+{
+  "obs": [
+    {
+      "first_name": "Tree",
+      "last_name": "Hacks",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:41:56",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "A person with a black badge is present in the scene.",
+        "recommendation": "Remove the person from the scene and verify their badge color."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "",
+        "rule": "Max Occupancy",
+        "status": "non_compliant",
+        "notes": "The number of people in a single zone exceeds 1000."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "There is a high risk due to the presence of a person with a black badge and over 1000 people in a single zone. Please remove the person from the scene and verify their badge color."
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "obs": [
+    {
+      "first_name": "Nathan",
+      "last_name": "K",
+      "affiliation": "Stanford",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Nathan",
+      "last_name": "K",
+      "affiliation": "Stanford",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Nathan",
+      "last_name": "K",
+      "affiliation": "Stanford",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "Nathan",
+      "last_name": "K",
+      "affiliation": "Stanford",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Nathan",
+      "last_name": "K",
+      "affiliation": "Stanford",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Nathan",
+      "last_name": "K",
+      "affiliation": "Stanford",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:09:20",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Bag of color red found in zone. (Violation of rule R001 as well)",
+        "recommendation": "Remove the bag and report to supervisor."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "status": "compliant",
+        "notes": "All persons in work zones are wearing required PPE (hard hat, vest)."
+      }
+    ],
+    "risk_score": 95,
+    "summary": "The observation is non-compliant due to the presence of a red bag and violation of rule R001. The risk score indicates a high level of risk."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "obs": [
+    {
+      "first_name": "RICK",
+      "last_name": "HAN",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:41:25\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"severity\": \"high\",\n      \"description\": \"More than 1000 people in a single zone at any time.\",\n      \"recommendation\": \"Reduce the number of people or adjust zones.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"severity\": \"critical\",\n      \"description\": \"A person with a black badge is nearby.\",\n      \"recommendation\": \"Escort the individual to an authorized area.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"\",\n      \"rule\": \"Suspicious Objects\",\n      \"status\": \"violated\",\n      \"notes\": \"\"\n    },\n    {\n      \"rule_id\": \"\",\n      \"rule\": \"Aggressive Behavior\",\n      \"status\": \"violated\",\n      \"notes\": \"\"\n    }\n  ],\n  \"risk_score\": 80,\n  \"summary\": \"The observation is non-compliant due to the presence of more than one thousand people in a single zone and a person with a black badge nearby. This poses a high risk as it violates both critical rules.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:41:34.784759",
+    "violations": [],
+    "risk_score": 0
+  }
+}

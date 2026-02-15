@@ -1,0 +1,13 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"Dylan\",\n    \"last_name\": \"Huang\",\n    \"affiliation\": \"HACKER\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Ryder\",\n    \"last_name\": \"Huang"
+  },
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:27:51\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Observation contains a bag of an unknown color.\",\n      \"recommendation\": \"Remove the suspicious object and ensure it is accounted for.\"\n    }\n  ],\n  \"compliant_rules\": [],\n  \"risk_score\": 80,\n  \"summary\": \"The observation violates rule R003 as a bag of an unknown color was detected. Please remove the suspicious object and ensure it is accounted for to maintain security compliance.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:27:57.943821",
+    "violations": [],
+    "risk_score": 0
+  }
+}

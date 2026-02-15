@@ -1,0 +1,29 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"JAMES\",\n    \"last_name\": \"WANG\",\n    \"affiliation\": \"HACKER\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"ALEX\",\n    \"last_name\": \"ZHOU\",\n"
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:29:00",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "James Wang is wearing a black badge which is not allowed in the restricted zone.",
+        "recommendation": "Remove James Wang from the restricted zone and ensure he wears an authorized badge."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "status": "compliant",
+        "notes": "All persons in work zones must wear required PPE (hard hat, vest)."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "The observation is non-compliant due to James Wang being in the restricted zone with an unauthorized badge. The risk score indicates a high level of risk."
+  }
+}

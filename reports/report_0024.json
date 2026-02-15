@@ -1,0 +1,57 @@
+{
+  "obs": [
+    {
+      "first_name": "Jared",
+      "last_name": "Huang",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Lindsay",
+      "last_name": "Liu",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Morgan",
+      "last_name": "Zhang",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Rachael",
+      "last_name": "Huang",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Shane",
+      "last_name": "Wang",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Yun",
+      "last_name": "Wang",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:18:09",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags and weapons found in the scene.",
+        "recommendation": "Remove unattended bags, weapons or unknown packages."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant with rule R003 due to suspicious objects found in the scene. Recommended action: Remove unattended bags, weapons or unknown packages."
+  }
+}

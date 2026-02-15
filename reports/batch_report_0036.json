@@ -1,0 +1,23 @@
+{
+  "obs": [
+    {
+      "first_name": "Unknown",
+      "badge_visible": false,
+      "facing_camera": true,
+      "description": "A young man with short curly brown hair, wearing glasses, a black shirt under a blue and white patterned jacket, and a gold watch with a blue strap. He has his right hand resting on his cheek and is looking directly at the camera. He is positioned centrally in the frame, with a background showing event banners and another person partially visible behind him at a desk with a laptop and signage indicating \"1 petaFLOP.\"",
+      "action": "Resting his right hand on his cheek while looking at the camera."
+    },
+    {
+      "first_name": "Unknown",
+      "badge_visible": false,
+      "facing_camera": false,
+      "description": "A person is seated at a desk in the background, partially visible. They appear to be working on a laptop, wearing a dark shirt, and their face is not visible as they are turned away from the camera. They are located behind the main subject, near the event signage and banners, and seem engaged in an activity at the desk, possibly related to the event setup or judging process.",
+      "action": "Working on a laptop, facing away from the camera."
+    }
+  ],
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

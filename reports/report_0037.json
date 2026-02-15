@@ -1,0 +1,47 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:25:37",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Reduce the number of people or adjust zones."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons should not be nearby unless they have badges of colors green, light blue, dark blue, purple, orange.",
+        "recommendation": "Ensure all persons in the scene are wearing required badges."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Flag unattended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect all unattended objects in the scene."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Flag any fighting, running, or aggressive gestures.",
+        "recommendation": "Stop all aggressive behavior and ensure no one is injured."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE (hard hat, vest).",
+        "recommendation": "Ensure all persons are wearing required PPE."
+      }
+    ],
+    "risk_score": 80,
+    "summary": "The scene observation is non-compliant with several security rules. Please investigate the cause and take appropriate action to ensure compliance in future observations."
+  }
+}

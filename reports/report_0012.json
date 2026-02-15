@@ -1,0 +1,98 @@
+{
+  "obs": [
+    {
+      "first_name": "Kaitlyn",
+      "last_name": "Liang",
+      "affiliation": "Stanford",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Anirudh",
+      "last_name": "Pandey",
+      "affiliation": "Stanford",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Anirudh",
+      "last_name": "Pandey",
+      "affiliation": "Stanford",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Anirudh",
+      "last_name": "Pandey",
+      "affiliation": "Stanford",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "Anirudh",
+      "last_name": "Pandey",
+      "affiliation": "Stanford",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Anirudh",
+      "last_name": "Pandey",
+      "affiliation": "Stanford",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Anirudh",
+      "last_name": "Pandey",
+      "affiliation": "Stanford",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:11:35",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than or equal to 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "No persons should be nearby unless they have badges of colors green, light blue, dark blue, purple, orange.",
+        "recommendation": "Ensure that only authorized personnel are present."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Flag unattended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect unattended items."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Flag any fighting, running, or aggressive gestures.",
+        "recommendation": "Promote a peaceful environment."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE (hard hat, vest).",
+        "recommendation": "Ensure that all personnel are wearing the necessary PPE."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "<not applicable>",
+        "rule": "<not applicable>",
+        "status": "non_compliant",
+        "notes": "The observation does not contain any personnel with green, light blue, dark blue, purple, orange, or black badges."
+      }
+    ],
+    "risk_score": 90,
+    "summary": "There are multiple violations of security rules. Limit the number of people to less than or equal to 1000 and ensure that only authorized personnel are present in restricted zones. Inspect unattended items and promote a peaceful environment."
+  }
+}

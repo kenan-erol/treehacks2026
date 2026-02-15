@@ -1,0 +1,22 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"D\",\n    \"last_name\": \"Chang\",\n    \"affiliation\": \"hacker\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"A\",\n    \"last_name\": \"D\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"K\",\n    \"last_name\": \"K\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"green\"\n  },\n  {\n    \"first_name\": \"D\",\n    \"last_name\": \"L\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"orange\"\n  },\n  {\n    \"first_name\": \"A\",\n    \"last_name\": \"W\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"light blue\"\n  },\n  {\n    \"first_name\": \"S\",\n    \"last_name\": \"W\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"H\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"R\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"J\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"T\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"S\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"J\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"R\",\n    \"last_name\": \"H\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"dark blue\"\n  },\n  {\n    \"first_name\": \"T\",\n    \"last_name\": \""
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:14:54",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags and weapons in the work zone.",
+        "recommendation": "Remove unattended bags, weapons from the work zone."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant with rule R003 (Suspicious Objects). Attended bags and weapons were observed in a restricted work zone. Recommend removing unattended bags, weapons from the work zone."
+  }
+}

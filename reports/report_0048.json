@@ -1,0 +1,40 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:28:10",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "[Suspicious Objects]",
+        "severity": "high",
+        "description": "Attended bags and weapons nearby.",
+        "recommendation": "Remove unattended bags, weapons or unknown packages."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "[Aggressive Behavior]",
+        "severity": "critical",
+        "description": "Person running and aggressive gestures nearby.",
+        "recommendation": "Stop the person from running or displaying aggressive behavior."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "R001",
+        "rule": "[Max Occupancy]",
+        "status": "non_compliant",
+        "notes": "More than 1000 people in a single zone at any time."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "[Restricted Zone Access]",
+        "status": "non_compliant",
+        "notes": "Persons nearby without required badges."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "The observation is non-compliant due to the presence of more than 1000 people in a single zone and aggressive behavior. Recommend removing unattended bags, weapons or unknown packages and stopping running or displaying aggressive gestures."
+  }
+}

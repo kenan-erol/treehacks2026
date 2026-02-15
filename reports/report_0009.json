@@ -1,0 +1,64 @@
+{
+  "obs": [
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Stanford",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Stanford",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Stanford",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Stanford",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Stanford",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Stanford",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:09:48",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Bag found in zone without badge color.",
+        "recommendation": "Remove bag and verify badge colors."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "",
+        "rule": "Max Occupancy",
+        "status": "non_compliant",
+        "notes": "Exceeds limit of 1000 people in a single zone."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "The observation is non-compliant due to exceeding the maximum occupancy rule. A suspicious bag was found nearby without proper badge colors."
+  }
+}

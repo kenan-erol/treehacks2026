@@ -1,0 +1,92 @@
+{
+  "obs": [
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Humboldt State University",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "An",
+      "last_name": "Tran",
+      "affiliation": "San Francisco State University",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Humboldt State University",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "An",
+      "last_name": "Tran",
+      "affiliation": "San Francisco State University",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "Nguyen",
+      "affiliation": "Humboldt State University",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "An",
+      "last_name": "Tran",
+      "affiliation": "San Francisco State University",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:08:31",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "Exceeded the maximum occupancy limit of 1000 people in a single zone.",
+        "recommendation": "Reduce the number of people or move them to another zone."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons with badges other than green, light blue, dark blue, purple, orange are not allowed nearby.",
+        "recommendation": "Ensure that only authorized personnel have access to the area."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags, weapons, or unknown packages were observed.",
+        "recommendation": "Report the suspicious objects to security personnel."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Fighting, running, or aggressive gestures were observed.",
+        "recommendation": "Stop the behavior and report it to security personnel."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "Not all persons in work zones are wearing required PPE.",
+        "recommendation": "Ensure that all personnel wear required PPE."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "<no rules violated>",
+        "rule": "<no rules violated>",
+        "status": "non_compliant",
+        "notes": "No compliant rules were found in the observation data."
+      }
+    ],
+    "risk_score": 80,
+    "summary": "The scene observation is non-compliant due to exceeding the maximum occupancy limit and unauthorized personnel being present. This poses a high risk of security breaches or accidents as a result of overcrowding and lack of proper supervision."
+  }
+}

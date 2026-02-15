@@ -1,0 +1,29 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "21:39:28",
+    "end_time": "21:39:28",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "21:39:28",
+        "observation": [
+          {
+            "first_name": "Darrick",
+            "last_name": "null",
+            "affiliation": "null",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "error",
+    "raw_response": " {\n  \"overall_status\": \"non_compliant\",\n  \"violations\": [\n    {\n      \"rule\": \"Restricted\",\n      \"subject\": \"Unknown Person\",\n      \"description\": \"Person found in red zone.\"\n    },\n    {\n      \"rule\": \"Aggression\",\n      \"subject\": \"Unknown Person\",\n      \"description\": \"Fighting detected.\"\n    }\n  ]",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T21:39:40.566637",
+    "violations": [],
+    "risk_score": 0
+  }
+}

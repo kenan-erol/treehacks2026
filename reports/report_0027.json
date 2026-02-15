@@ -1,0 +1,57 @@
+{
+  "obs": [
+    {
+      "first_name": "Morgan",
+      "last_name": "D",
+      "affiliation": "hacker",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Shivam",
+      "last_name": "G",
+      "affiliation": "hacker",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Jared",
+      "last_name": "H",
+      "affiliation": "hacker",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Jasmine",
+      "last_name": "L",
+      "affiliation": "hacker",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Anirudh",
+      "last_name": "R",
+      "affiliation": "hacker",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Khoa",
+      "last_name": "T",
+      "affiliation": "hacker",
+      "badge_color": "dark blue"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:19:06",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags and weapons found in the scene.",
+        "recommendation": "Remove unattended bags, weapons from the scene."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 90,
+    "summary": "The observation is non-compliant with rule R003. Attended bags and weapons were found in the scene. Recommend removing unattended bags, weapons from the scene."
+  }
+}

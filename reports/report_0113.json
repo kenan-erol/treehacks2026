@@ -1,0 +1,18 @@
+{
+  "obs": [
+    {
+      "first_name": "null",
+      "last_name": "null",
+      "affiliation": "null",
+      "badge_color": "unknown"
+    }
+  ],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:45:02\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"A person is present without a badge of color green.\",\n      \"recommendation\": \"Ensure the person has a valid badge.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"The number of people in the scene is 1234, which exceeds the limit.\"\n    },\n    {\n      \"rule_id\": \"R007\",\n      \"rule\": \"PPE Compliance\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"No persons in work zones are wearing required PPE (hard hat, vest).\"\n    }\n  ],\n  \"risk_score\": 89,\n  \"summary\": \"The scene has multiple violations. The number of people exceeds the limit and no one is wearing required PPE.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:45:08.117057",
+    "violations": [],
+    "risk_score": 0
+  }
+}

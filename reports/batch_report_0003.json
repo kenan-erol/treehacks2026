@@ -1,0 +1,18 @@
+{
+  "obs": {
+    "people_count": 1,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": true,
+        "description": "A person with short hair and glasses is wearing a TreeHacks 2026 badge around their neck. The badge is a green Christmas tree-shaped PCB with \"TREE HACKS\" and \"2026\" text in white, along with a rocket ship, stars, and planet graphics, a QR code, LEDs, and USB-C connectors."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

@@ -1,0 +1,22 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"Katherine\",\n    \"last_name\": \"Hoffman\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Nathan\",\n    \"last_name\": \"Dunlap\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Samantha\",\n    \"last_name\": \"Chen\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Evan\",\n    \"last_name\": \"Huang\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Morgan\",\n    \"last_name\": \"Wang\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Derek\",\n    \"last_name\": \"Liu\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Amanda\",\n    \"last_name\": \"Park\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Riley\",\n    \"last_name\": \"Zhang\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Benjamin\",\n    \"last_name\": \"Chen\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Jasmine\",\n    \"last_name\": \"Liu\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Dylan\",\n    \"last_name\": \"Wang\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Taylor\",\n    \"last_name\": \"Huang\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Olivia\",\n    \"last_name\": \"Zhang\",\n    \"affiliation\": \"organizer\",\n    \"badge_color\": \"black\"\n  },\n"
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:24:57",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags and weapons in the scene.",
+        "recommendation": "Remove unattended bags and weapons."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant with rule R003 (Suspicious Objects) due to the presence of unattended bags and weapons in the scene. The risk score indicates a high level of risk."
+  }
+}

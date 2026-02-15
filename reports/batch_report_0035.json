@@ -1,0 +1,34 @@
+{
+  "obs": [
+    {
+      "first_name": "Unknown",
+      "badge_visible": false,
+      "facing_camera": true,
+      "description": "A young adult male with short brown hair, wearing glasses, a black jacket with blue and white patterns, and a white inner shirt. He is looking slightly downward and appears to be speaking or focused on something below the camera. He is positioned in the foreground, centered in the frame, with another person partially visible in the background to the right, who is wearing a gray hoodie and facing away from the camera. The background includes a window with a grid pattern and some electronic equipment, possibly related to the event setup. The lighting is bright and even, typical of an indoor office or event space with fluorescent lights on the ceiling tiles. The person is standing still, with no significant movement observed in the frame provided.",
+      "action": "Standing still, looking slightly downward, possibly speaking or focused on something below the camera."
+    },
+    {
+      "first_name": "Unknown",
+      "badge_visible": false,
+      "facing_camera": false,
+      "description": "A person wearing a gray hoodie, standing in the background to the right, facing away from the camera. Only part of their back and side profile is visible. The person appears to be engaged in an activity that involves looking at or interacting with something off-camera. Their posture suggests they are not directly facing the camera and are likely involved in a separate task or conversation. The person is positioned in the background, slightly to the right of the main subject, and is partially obscured by the main subject's head and shoulders. The person is standing still, with no significant movement observed in the frame provided.",
+      "action": "Standing still, facing away from the camera, possibly engaged in an activity off-camera."
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "Badge",
+        "subject": "Unknown",
+        "description": "A young adult male with short brown hair, wearing glasses, a black jacket with blue and white patterns, and a white inner shirt. He is looking slightly downward and appears to be speaking or focused on something below the camera."
+      },
+      {
+        "rule": "PPE",
+        "subject": "Unknown (in background)",
+        "description": "A person wearing a gray hoodie, standing in the background to the right, facing away from the camera. Only part of their back and side profile is visible."
+      }
+    ]
+  },
+  "source": "laptop_sync"
+}

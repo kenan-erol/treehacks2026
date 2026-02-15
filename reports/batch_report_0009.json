@@ -1,0 +1,24 @@
+{
+  "obs": {
+    "people_count": 1,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": false,
+        "description": "A young man with short brown hair, wearing glasses, a black shirt, a lanyard, and a blue and white jacket."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "No Badge",
+        "subject": "Person 1",
+        "description": "facing camera, no badge. A young man with short brown hair, wearing glasses, a black shirt, a lanyard, an"
+      }
+    ]
+  },
+  "source": "laptop_sync"
+}

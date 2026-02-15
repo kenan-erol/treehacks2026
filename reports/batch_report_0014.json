@@ -1,0 +1,24 @@
+{
+  "obs": {
+    "people_count": 1,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": true,
+        "description": "A person with short brown hair and glasses is facing the camera, wearing a TreeHacks 2026 badge around their neck."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "No Badge",
+        "subject": "Person 1",
+        "description": "facing camera, no badge"
+      }
+    ]
+  },
+  "source": "laptop_sync"
+}

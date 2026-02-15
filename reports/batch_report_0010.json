@@ -1,0 +1,18 @@
+{
+  "obs": {
+    "people_count": 1,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": true,
+        "description": "A person with short brown hair, wearing glasses, a black shirt, a blue and white jacket, and a lanyard around their neck."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

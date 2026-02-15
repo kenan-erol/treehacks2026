@@ -1,0 +1,29 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "21:39:55",
+    "end_time": "21:39:55",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "21:39:55",
+        "observation": [
+          {
+            "first_name": "Tree",
+            "last_name": "Hacks",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "error",
+    "raw_response": " {\n  \"overall_status\": \"non_compliant\",\n  \"violations\": [\n    {\n      \"rule\": \"Occupancy\",\n      \"subject\": \"Unknown Person\",\n      \"description\": \"More than 10 people in work zone.\"\n    }\n]",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T21:40:05.882887",
+    "violations": [],
+    "risk_score": 0
+  }
+}

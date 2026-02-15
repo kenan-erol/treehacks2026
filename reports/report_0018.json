@@ -1,0 +1,78 @@
+{
+  "obs": [
+    {
+      "first_name": "Anand",
+      "last_name": "Kumar",
+      "affiliation": "organizer",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Shubham",
+      "last_name": "Jain",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Rahul",
+      "last_name": "Raj",
+      "affiliation": "organizer",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Vishal",
+      "last_name": "Ranjan",
+      "affiliation": "organizer",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Pranav",
+      "last_name": "Sharma",
+      "affiliation": "organizer",
+      "badge_color": "dark blue"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:15:18",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons should not be nearby unless they have badges of colors green, light blue, dark blue, purple, orange.",
+        "recommendation": "Ensure that only authorized personnel are in the restricted zone."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Flag unattended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect unattended items for security."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Flag any fighting, running, or aggressive gestures.",
+        "recommendation": "Stop any aggressive behavior."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE (hard hat, vest).",
+        "recommendation": "Ensure that all personnel are wearing the required PPE."
+      }
+    ],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant due to more than 1000 people in a single zone at any time. Additional security measures should be taken to ensure compliance with rule R001 and restrict access to the restricted zone."
+  }
+}

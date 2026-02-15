@@ -1,0 +1,37 @@
+{
+  "obs": {
+    "people_count": 4,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": true,
+        "description": "A person with short brown hair and glasses is facing the camera, wearing a TreeHacks 2026 badge around their neck. The badge is a green PCB with \"TREE HACKS\" and \"2026\" text, along with graphics like a rocket ship, stars, and a planet. The person is wearing a black hoodie with a blue patterned design."
+      },
+      {
+        "person": "Person 2",
+        "facing_camera": false,
+        "badge_visible": false,
+        "description": "A person wearing a yellow hoodie and glasses is walking from left to right in the background, not facing the camera."
+      },
+      {
+        "person": "Person 3",
+        "facing_camera": false,
+        "badge_visible": false,
+        "description": "A person wearing a gray hoodie is walking from right to left in the background, not facing the camera."
+      },
+      {
+        "person": "Person 4",
+        "facing_camera": false,
+        "badge_visible": false,
+        "description": "A person wearing a black hoodie is partially visible on the far right, not facing the camera."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "error",
+    "error": "Could not parse: [\n  {\n    \"overall_status\": \"non_compliant\",\n    \"violations\": [\n      {\n        \"rule\": \"No Badge\",\n        \"subject\": \"Person 1\",\n        \"description\": \"facing camera, no badge\"\n      }\n  ]\n]",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

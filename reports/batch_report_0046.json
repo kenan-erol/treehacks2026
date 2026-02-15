@@ -1,0 +1,25 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "00:03:22",
+    "end_time": "00:03:22",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "00:03:22",
+        "observation": [
+          {
+            "first_name": "Liam",
+            "last_name": "Lynch",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  }
+}

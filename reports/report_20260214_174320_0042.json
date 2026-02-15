@@ -1,0 +1,18 @@
+{
+  "observation": [
+    {
+      "first_name": "A",
+      "last_name": "B",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    }
+  ],
+  "compliance_report": {
+    "overall_status": "error",
+    "timestamp": "2026-02-14T17:43:20.466317",
+    "error": "Ollama timed out after 180s. Model may be loading for the first time. Try again or check: ollama ps",
+    "violations": [],
+    "risk_score": -1,
+    "summary": "Compliance check failed: Ollama timed out after 180s. Model may be loading for the first time. Try again or check: ollama ps"
+  }
+}

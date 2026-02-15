@@ -1,0 +1,52 @@
+{
+  "obs": [
+    {
+      "first_name": "Jaden",
+      "last_name": "Wang",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Ry",
+      "last_name": "Huang",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Ry",
+      "last_name": "Huang",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Ry",
+      "last_name": "Huang",
+      "affiliation": "HACKER",
+      "badge_color": "black"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:27:31",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons with black badges are nearby.",
+        "recommendation": "Remove the persons from the scene."
+      }
+    ],
+    "compliant_rules": [],
+    "risk_score": 90,
+    "summary": "The observation is non-compliant due to exceeding the Max Occupancy rule and having restricted zone access with black badges present. This poses a high risk of security breach as these persons may have malicious intent."
+  }
+}

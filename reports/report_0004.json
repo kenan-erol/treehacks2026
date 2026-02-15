@@ -1,0 +1,36 @@
+{
+  "obs": [
+    {
+      "first_name": "Arif",
+      "last_name": "Khan",
+      "affiliation": "Rochester Institute of Technology",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Rohan",
+      "last_name": "Raj",
+      "affiliation": "University of California, Berkeley",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Arnav",
+      "last_name": "Gupta",
+      "affiliation": "Cornell University",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Siddharth",
+      "last_name": "Srivastava",
+      "affiliation": "University of California, Berkeley",
+      "badge_color": "light blue"
+    }
+  ],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:07:25\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"severity\": \"high\",\n      \"description\": \"Bag found unattended near Rohan Raj.\",\n      \"recommendation\": \"Secure bag and ensure it is not a weapon.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"severity\": \"high\",\n      \"description\": \"Arnav Gupta seen running.\",\n      \"recommendation\": \"Stop the aggressive behavior and ensure no one is harmed.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"status\": \"non_compliant\",\n      \"notes\": \"More than 1000 people in the scene.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"status\": \"violated\",\n      \"notes\": \"Person with black badge nearby.\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The scene has a high risk of security violation due to the presence of more than 1000 people and a person with a restricted zone access badge in proximity. The aggressive behavior rule is also violated as Arnav Gupta was seen running.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:07:42.497774",
+    "violations": [],
+    "risk_score": 0
+  }
+}

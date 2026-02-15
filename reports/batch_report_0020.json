@@ -1,0 +1,26 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "00:12:58",
+    "end_time": "00:12:58",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "00:12:58",
+        "observation": [
+          {
+            "first_name": "Morgan",
+            "last_name": "Lund",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "error",
+    "error": "Expecting ',' delimiter: line 14 column 4 (char 291)",
+    "violations": []
+  }
+}

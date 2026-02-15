@@ -1,0 +1,33 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "21:37:14",
+    "end_time": "21:37:14",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "21:37:14",
+        "observation": [
+          {
+            "first_name": "Jared",
+            "last_name": "Holt",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "Occupancy",
+        "subject": "Unknown Person",
+        "description": "More than 10 people in work zone."
+      }
+    ],
+    "timestamp": "2026-02-14T21:37:25.716446",
+    "risk_score": 0
+  }
+}

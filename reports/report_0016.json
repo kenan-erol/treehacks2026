@@ -1,0 +1,104 @@
+{
+  "obs": [
+    {
+      "first_name": "Hannah",
+      "last_name": "Liu",
+      "affiliation": "hacker",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Aman",
+      "last_name": "Saini",
+      "affiliation": "organizer",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Anjali",
+      "last_name": "Saini",
+      "affiliation": "organizer",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Shane",
+      "last_name": "Huang",
+      "affiliation": "organizer",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "Nancy",
+      "last_name": "Zhang",
+      "affiliation": "organizer",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Jesse",
+      "last_name": "Chen",
+      "affiliation": "organizer",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Anushka",
+      "last_name": "Sharma",
+      "affiliation": "mentor",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:13:52",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "severity": "high",
+        "description": "More than 1000 people in a single zone at any time.",
+        "recommendation": "Limit the number of people to less than 1000."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "severity": "critical",
+        "description": "Persons with badges other than green, light blue, dark blue, purple, orange are not allowed nearby.",
+        "recommendation": "Ensure that only authorized persons have access to the area."
+      },
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags, weapons, or unknown packages.",
+        "recommendation": "Inspect unattended items."
+      },
+      {
+        "rule_id": "R006",
+        "rule": "Aggressive Behavior",
+        "severity": "critical",
+        "description": "Fighting, running, or aggressive gestures.",
+        "recommendation": "Stop any aggressive behavior."
+      },
+      {
+        "rule_id": "R007",
+        "rule": "PPE Compliance",
+        "severity": "medium",
+        "description": "All persons in work zones must wear required PPE (hard hat, vest).",
+        "recommendation": "Ensure all personnel are wearing the correct PPE."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "",
+        "rule": "",
+        "status": "non_compliant",
+        "notes": ""
+      },
+      {
+        "rule_id": "",
+        "rule": "",
+        "status": "non_compliant",
+        "notes": ""
+      }
+    ],
+    "risk_score": 80,
+    "summary": "The observation is non-compliant with all security rules. The risk score indicates a high level of risk."
+  }
+}

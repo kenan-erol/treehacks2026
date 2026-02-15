@@ -1,0 +1,36 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "00:27:56",
+    "end_time": "00:27:56",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "00:27:56",
+        "observation": [
+          {
+            "first_name": "Kenan",
+            "last_name": "EROL",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "No Badge",
+        "subject": "Person 1",
+        "description": "facing camera, no badge"
+      },
+      {
+        "rule": "No Badge",
+        "subject": "Person 2",
+        "description": "cannot verify, skip them"
+      }
+    ]
+  }
+}

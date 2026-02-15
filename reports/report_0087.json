@@ -1,0 +1,13 @@
+{
+  "obs": {
+    "raw_description": "```json\n[\n  {\n    \"first_name\": \"Bryce\",\n    \"last_name\": \"Hoffman\",\n    \"affiliation\": \"HACKER\",\n    \"badge_color\": \"black\"\n  },\n  {\n    \"first_name\": \"Kieran\",\n    \"last_name\": \"M"
+  },
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:39:37\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"severity\": \"critical\",\n      \"description\": \"Bryce Hoffman is wearing a black badge which is not allowed in the restricted zone.\",\n      \"recommendation\": \"Remove Bryce Hoffman from the restricted zone.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R007\",\n      \"rule\": \"PPE Compliance\",\n      \"status\": \"compliant\",\n      \"notes\": \"All persons in work zones must wear required PPE (hard hat, vest).\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The observation is non-compliant due to Bryce Hoffman being present in the restricted zone with a non-allowed badge color.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:39:41.888206",
+    "violations": [],
+    "risk_score": 0
+  }
+}

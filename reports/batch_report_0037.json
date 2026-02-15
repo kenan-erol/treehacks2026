@@ -1,0 +1,25 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "00:02:37",
+    "end_time": "00:02:37",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "00:02:37",
+        "observation": [
+          {
+            "first_name": "Morgan",
+            "last_name": "Hoffman",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  }
+}

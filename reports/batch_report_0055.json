@@ -1,0 +1,29 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "21:37:48",
+    "end_time": "21:37:48",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "21:37:48",
+        "observation": [
+          {
+            "first_name": "null",
+            "last_name": "null",
+            "affiliation": "null",
+            "badge_color": "uncertain"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "error",
+    "raw_response": " {\n  \"overall_status\": \"non_compliant\",\n  \"violations\": [\n    {\n      \"rule\": \"Restricted\",\n      \"subject\": \"Unknown Person\",\n      \"description\": \"People in red zones.\"\n    },\n    {\n      \"rule\": \"Suspicious\",\n      \"subject\": \"Unknown Person\",\n      \"description\": \"Unattended bags/weapons.\"\n    }\n  ]",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T21:38:00.339176",
+    "violations": [],
+    "risk_score": 0
+  }
+}

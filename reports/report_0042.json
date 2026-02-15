@@ -1,0 +1,11 @@
+{
+  "obs": [],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:26:22\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"[Suspicious Objects]\",\n      \"severity\": \"high\",\n      \"description\": \"Attended bags and weapons were observed.\",\n      \"recommendation\": \"Remove unattended bags, weapons or unknown packages.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"[Aggressive Behavior]\",\n      \"severity\": \"critical\",\n      \"description\": \"Persons were observed running and aggressive gestures.\",\n      \"recommendation\": \"Stop any fighting, running or aggressive behavior.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"[Max Occupancy]\",\n      \"status\": \"violated\",\n      \"notes\": \"The number of persons in the scene is 1234, which exceeds the maximum limit.\"\n    },\n    {\n      \"rule_id\": \"R007\",\n      \"rule\": \"[PPE Compliance]\",\n      \"status\": \"violated\",\n      \"notes\": \"Some persons were not wearing required PPE (hard hat and vest).\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The scene observation is non-compliant due to the presence of unattended bags and weapons. Additionally, some persons in work zones did not wear required PPE.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:26:29.287435",
+    "violations": [],
+    "risk_score": 0
+  }
+}

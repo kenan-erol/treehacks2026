@@ -1,0 +1,30 @@
+{
+  "obs": {
+    "people_count": 3,
+    "people": [
+      {
+        "person": "Person 1",
+        "facing_camera": true,
+        "badge_visible": true,
+        "description": "The person is wearing a black jacket with a blue and white patterned inner lining and a white lanyard around their neck, which holds a TreeHacks 2026 badge."
+      },
+      {
+        "person": "Person 2",
+        "facing_camera": false,
+        "badge_visible": false,
+        "description": "The person is wearing a dark blue shirt and is facing away from the camera, so their badge cannot be seen."
+      },
+      {
+        "person": "Person 3",
+        "facing_camera": false,
+        "badge_visible": false,
+        "description": "The person is wearing a gray shirt and is facing away from the camera, so their badge cannot be seen."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

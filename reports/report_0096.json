@@ -1,0 +1,18 @@
+{
+  "obs": [
+    {
+      "first_name": "Tree",
+      "last_name": "Hacks",
+      "affiliation": "HACKER",
+      "badge_color": "green"
+    }
+  ],
+  "report": {
+    "overall_status": "error",
+    "raw_response": "{\n  \"overall_status\": \"non_compliant\",\n  \"timestamp\": \"2026-02-14 19:41:10\",\n  \"rules_checked\": 7,\n  \"violations\": [\n    {\n      \"rule_id\": \"R001\",\n      \"rule\": \"Max Occupancy\",\n      \"severity\": \"high\",\n      \"description\": \"More than 1000 people in a single zone at any time.\",\n      \"recommendation\": \"Reduce the number of people or implement additional security measures.\"\n    },\n    {\n      \"rule_id\": \"R002\",\n      \"rule\": \"Restricted Zone Access\",\n      \"severity\": \"critical\",\n      \"description\": \"A person with a green badge is nearby.\",\n      \"recommendation\": \"Ensure that the person has the correct badge color or implement additional security measures.\"\n    }\n  ],\n  \"compliant_rules\": [\n    {\n      \"rule_id\": \"R003\",\n      \"rule\": \"Suspicious Objects\",\n      \"status\": \"violated\",\n      \"notes\": \"A bag is unattended in the restricted zone.\"\n    },\n    {\n      \"rule_id\": \"R006\",\n      \"rule\": \"Aggressive Behavior\",\n      \"status\": \"violated\",\n      \"notes\": \"Tree Hacks has an aggressive gesture towards a security officer with a light blue badge.\"\n    }\n  ],\n  \"risk_score\": 85,\n  \"summary\": \"The observation is non-compliant due to the presence of more than 1000 people in a single zone and a person with a green badge being nearby. The risk score indicates that there are high risks associated with this violation.\"",
+    "parse_error": "Could not parse Nemotron response as JSON",
+    "timestamp": "2026-02-14T19:41:20.512436",
+    "violations": [],
+    "risk_score": 0
+  }
+}

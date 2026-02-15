@@ -1,0 +1,58 @@
+{
+  "obs": [
+    {
+      "first_name": "Ethan",
+      "last_name": "Chen",
+      "affiliation": "Stanford",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Anastasia",
+      "last_name": "Kovalenko",
+      "affiliation": "Stanford",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Ming",
+      "last_name": "Zhang",
+      "affiliation": "Stanford",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Anastasia",
+      "last_name": "Kovalenko",
+      "affiliation": "Stanford",
+      "badge_color": "dark blue"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:11:02",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Anastasia Kovalenko is nearby without a badge of color.",
+        "recommendation": "Please ensure Anastasia Kovalenko has the correct badge."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "R001",
+        "rule": "Max Occupancy",
+        "status": "non_compliant",
+        "notes": "There are more than 1000 people in the scene."
+      },
+      {
+        "rule_id": "R002",
+        "rule": "Restricted Zone Access",
+        "status": "violated",
+        "notes": "Anastasia Kovalenko is nearby without a badge of color."
+      }
+    ],
+    "risk_score": 85,
+    "summary": "The scene has multiple violations. Max Occupancy rule (R001) is non-compliant with more than 1000 people in the scene at this time. Restricted Zone Access rule (R002) is violated as Anastasia Kovalenko is nearby without a badge of color."
+  }
+}

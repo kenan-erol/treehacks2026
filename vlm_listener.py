@@ -47,33 +47,29 @@ async def lifespan(app: FastAPI):
     
     # 1. Setup vLLM Client (The Eyes)
     _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
-    print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
+    print(f"[PROXY] Ready, forwarding to vLLM at {VLLM_BASE}")
     
-    # 2. AUTO-INITIALIZE NEMOTRON (The Brain) 
-    # This replaces the need for 'ollama run' in a separate terminal!
-    print("🧠 Waking up Nemotron... (This may take 5-10 seconds)")
+    # Auto-initialize Nemotron
+    print("[PROXY] Loading Nemotron (30B model, may take a minute)...")
     try:
-        async with httpx.AsyncClient(timeout=30.0) as ollama:
-            # Send a dummy prompt to force-load the model
+        async with httpx.AsyncClient(timeout=300.0) as ollama:
             resp = await ollama.post(
                 "http://localhost:11434/api/generate",
                 json={
-                    "model": "nemotron-mini:4b", 
+                    "model": "nemotron-3-nano:30b",
                     "prompt": "system check", 
                     "stream": False
                 }
             )
             if resp.status_code == 200:
-                print("✅ Nemotron is LOADED and ready on GPU.")
+                print("[PROXY] Nemotron loaded.")
             else:
-                print(f"⚠️  Ollama Warning: {resp.text}")
+                print(f"[PROXY] Ollama warning: {resp.text}")
     except Exception as e:
-        print(f"❌ Could not initialize Nemotron: {e}")
-        print("   (Make sure 'ollama serve' is running in the background!)")
+        print(f"[PROXY] Could not initialize Nemotron: {type(e).__name__}: {e}")
+        print("         Make sure 'ollama serve' is running.")
 
-    # 3. Start the Background Batch Processor
-    print("⚙️  Starting Background Batch Processor...")
-    print("🛡️  Guardrails: Active (Filtering [] and fixing counts)")
+    # Start background batch processor
     asyncio.create_task(batch_processor())
 
     yield
@@ -97,13 +93,17 @@ def _fix_counts_only(obs):
     return obs
 
 # ── Routes ──────────────────────────────────────────────────────────
-@app.post("/v1/chat/completions")
-async def proxy_chat_completions(request: Request):
+@app.post("/v1/analyze_frame_sync")
+async def analyze_frame_sync(request: Request):
+    """
+    Synchronous endpoint for laptop client.
+    Workflow: Laptop → Cosmos → Nemotron → Report back to Laptop
+    """
     global _idx
     body = await request.body()
     ts = datetime.now().strftime("%H:%M:%S")
-
-    # 1. Forward request to vLLM (Cosmos) - The "Producer"
+    
+    # 1. Forward to Cosmos (vLLM)
     try:
         resp = await _client.post(
             "/v1/chat/completions",
@@ -111,7 +111,106 @@ async def proxy_chat_completions(request: Request):
             headers={"Content-Type": "application/json"},
         )
     except Exception as e:
-        print(f"[{ts}] ❌ vLLM unreachable: {e}")
+        print(f"[{ts}] ERROR: vLLM unreachable: {e}")
+        return Response(
+            content=json.dumps({"error": f"Cosmos unreachable: {str(e)}"}), 
+            status_code=502,
+            media_type="application/json"
+        )
+    
+    # 2. Extract Cosmos VLM Response
+    vlm_text = ""
+    try:
+        vllm_data = resp.json()
+        vlm_text = vllm_data["choices"][0]["message"]["content"]
+    except Exception as e:
+        print(f"[{ts}] ERROR: Failed to parse Cosmos response: {e}")
+        return Response(
+            content=json.dumps({"error": f"Invalid Cosmos response: {str(e)}"}),
+            status_code=500,
+            media_type="application/json"
+        )
+    
+    if not vlm_text:
+        return Response(
+            content=json.dumps({"error": "Empty response from Cosmos"}),
+            status_code=500,
+            media_type="application/json"
+        )
+    
+    # 3. Log Cosmos output
+    print(f"\n[{ts}] COSMOS OUTPUT:")
+    print(vlm_text)
+    
+    # 4. Parse and fix counts
+    raw_obs = _parse_vlm_output(vlm_text)
+    fixed_obs = _fix_counts_only(raw_obs)
+    
+    # If Cosmos returned a list, wrap it into expected format
+    if isinstance(fixed_obs, list):
+        fixed_obs = {"people_count": len(fixed_obs), "people": fixed_obs}
+    
+    # If parsing failed (free text, not JSON), pass raw text as-is
+    if not fixed_obs or fixed_obs == {}:
+        fixed_obs = {"raw_description": vlm_text}
+    
+    # 5. Run Nemotron Compliance Check
+    print(f"[{ts}] Running compliance check...")
+    try:
+        report = await asyncio.to_thread(check_compliance, fixed_obs, None)
+        
+        _idx += 1
+        save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
+        save_path.write_text(json.dumps({
+            "obs": fixed_obs, 
+            "report": report,
+            "source": "laptop_sync"
+        }, indent=2))
+        
+        # 6. Log result
+        status = report.get("overall_status", "unknown")
+        violations = report.get("violations", [])
+        
+        if violations:
+            print(f"[{ts}] {status.upper()} | {len(violations)} violation(s)")
+            for v in violations:
+                who = v.get('subject', 'Unknown')
+                rule = v.get('rule', 'Rule')
+                desc = v.get('description', '')[:60]
+                print(f"  [{who}] {rule}: {desc}")
+        else:
+            print(f"[{ts}] {status.upper()} | No violations")
+        
+        # 7. Return report to laptop
+        return Response(
+            content=json.dumps(report, indent=2),
+            status_code=200,
+            media_type="application/json"
+        )
+        
+    except Exception as e:
+        print(f"[{ts}] ERROR: Compliance check failed: {e}")
+        return Response(
+            content=json.dumps({"error": f"Nemotron compliance check failed: {str(e)}"}),
+            status_code=500,
+            media_type="application/json"
+        )
+
+
+@app.post("/v1/chat/completions")
+async def proxy_chat_completions(request: Request):
+    global _idx
+    body = await request.body()
+    ts = datetime.now().strftime("%H:%M:%S")
+
+    try:
+        resp = await _client.post(
+            "/v1/chat/completions",
+            content=body,
+            headers={"Content-Type": "application/json"},
+        )
+    except Exception as e:
+        print(f"[{ts}] ERROR: vLLM unreachable: {e}")
         return Response(content=json.dumps({"error": str(e)}), status_code=502)
 
     # 2. Extract VLM Response
@@ -132,8 +231,8 @@ async def proxy_chat_completions(request: Request):
         event_queue.put_nowait((ts, json.dumps(fixed_obs)))
         
         q_size = event_queue.qsize()
-        if q_size % 50 == 0: # Reduce log spam
-            print(f"[{ts}] 📥 Buffered frame (Queue size: {q_size})")
+        if q_size % 50 == 0:
+            print(f"[{ts}] Buffered frame (queue: {q_size})")
 
     return Response(
         content=resp.content,
@@ -158,15 +257,7 @@ async def proxy_passthrough(request: Request, path: str):
 
 # ── Background Worker (The Consumer) ────────────────────────────────
 async def batch_processor():
-    """
-    Infinite loop that:
-    1. Waits for data in the queue
-    2. Accumulates data for BATCH_INTERVAL seconds
-    3. Filters out EMPTY lists
-    4. Deduplicates identical sequential frames
-    5. PRINTS IDENTIFIED NAMES (New!)
-    6. Sends batch to Nemotron
-    """
+    """Background worker: batches frames, deduplicates, sends to Nemotron."""
     last_processed_text = None
     
     while True:
@@ -208,17 +299,7 @@ async def batch_processor():
                 "observation": obs
             })
 
-            # ──────── NEW PRINT STATEMENT ────────
-            # Extract and print names immediately
-            if isinstance(obs, dict) and "people" in obs:
-                names = [p.get("first_name", "Unknown") for p in obs["people"]]
-                print(f"[{ts}] 👁️  SIGHTING: {', '.join(names)}")
-            elif isinstance(obs, list):
-                # Handle list-of-objects format
-                names = [p.get("first_name", "Unknown") for p in obs if isinstance(p, dict)]
-                if names:
-                    print(f"[{ts}] 👁️  SIGHTING: {', '.join(names)}")
-            # ─────────────────────────────────────
+
 
         if not unique_observations:
             continue
@@ -232,7 +313,7 @@ async def batch_processor():
             "events": unique_observations
         }
 
-        print(f"📦 Processing Batch: {len(batch)} frames -> {len(unique_observations)} valid events")
+        print(f"[BATCH] {len(batch)} frames -> {len(unique_observations)} valid events")
         asyncio.create_task(_run_compliance_batch(timeline_obs))
 
 
@@ -246,22 +327,19 @@ async def _run_compliance_batch(observation: dict):
         violations = report.get("violations", [])
         
         if violations:
-            print(f"[{ts}] 🚨 {status.upper()} | {len(violations)} Violations")
+            print(f"[{ts}] {status.upper()} | {len(violations)} violation(s)")
             for v in violations:
-                # Extract the new 'subject' field
                 who = v.get('subject', 'Unknown')
                 rule = v.get('rule', 'Rule')
                 desc = v.get('description', '')[:60]
-                
-                # Print: [Kenan Erol] ⛔ PPE: Missing hard hat
-                print(f"       👤 [{who}] ⛔ {rule}: {desc}")
+                print(f"  [{who}] {rule}: {desc}")
 
         _idx += 1
         save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
         save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
 
     except Exception as e:
-        print(f"[{ts}] ❌ Batch Check Error: {e}")
+        print(f"[{ts}] ERROR: Batch check: {e}")
 
 # ── Helpers ─────────────────────────────────────────────────────────
 def _parse_vlm_output(text: str) -> dict:
@@ -283,8 +361,7 @@ def main():
     args = parser.parse_args()
 
     VLLM_BASE = args.vllm_url
-    print(f"🚀 Proxy listening on {args.host}:{args.port} -> vLLM {VLLM_BASE}")
-    print(f"⏱️  Batch Interval: {BATCH_INTERVAL}s | Max Batch: {MAX_BATCH_SIZE}")
+    print(f"[PROXY] Listening on {args.host}:{args.port} -> vLLM {VLLM_BASE}")
     uvicorn.run(app, host=args.host, port=args.port, log_level="error")
 
 if __name__ == "__main__":

@@ -1,0 +1,64 @@
+{
+  "obs": [
+    {
+      "first_name": "Chase",
+      "last_name": "Wong",
+      "affiliation": "organizer",
+      "badge_color": "black"
+    },
+    {
+      "first_name": "Dylan",
+      "last_name": "Wong",
+      "affiliation": "organizer",
+      "badge_color": "green"
+    },
+    {
+      "first_name": "Nate",
+      "last_name": "Kane",
+      "affiliation": "organizer",
+      "badge_color": "light blue"
+    },
+    {
+      "first_name": "Rachael",
+      "last_name": "Lopez",
+      "affiliation": "organizer",
+      "badge_color": "dark blue"
+    },
+    {
+      "first_name": "Kelsey",
+      "last_name": "Hart",
+      "affiliation": "organizer",
+      "badge_color": "orange"
+    },
+    {
+      "first_name": "Alyssa",
+      "last_name": "Garcia",
+      "affiliation": "organizer",
+      "badge_color": "purple"
+    }
+  ],
+  "report": {
+    "overall_status": "non_compliant",
+    "timestamp": "2026-02-14 19:16:12",
+    "rules_checked": 7,
+    "violations": [
+      {
+        "rule_id": "R003",
+        "rule": "Suspicious Objects",
+        "severity": "high",
+        "description": "Attended bags and unknown packages found in the scene.",
+        "recommendation": "Remove unattended items from the scene."
+      }
+    ],
+    "compliant_rules": [
+      {
+        "rule_id": "",
+        "rule": "Max Occupancy",
+        "status": "non_compliant",
+        "notes": "Exceeds maximum occupancy limit of 1000 people in a single zone."
+      }
+    ],
+    "risk_score": 50,
+    "summary": "The scene observation violates rule R003 (Suspicious Objects) due to unattended bags and unknown packages. The overall risk score is high as the violation of Max Occupancy rule increases the likelihood of other security violations."
+  }
+}

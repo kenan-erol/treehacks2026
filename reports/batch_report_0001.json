@@ -1,0 +1,43 @@
+{
+  "obs": {
+    "overall_status": "non_compliant",
+    "summary": "Person 1 is not wearing a TreeHacks badge, which violates the badge compliance rule. Person 2 is partially visible but does not appear to be relevant to this rule check. The main issue is the absence of a badge on Person 1, leading to a non-compliant status for this rule.",
+    "people_count": 2,
+    "people": [
+      {
+        "person_id": "Person 1",
+        "appearance": "A person with short hair, glasses, and a beard, wearing a blue and black jacket over a black shirt. They have a lanyard around their neck but no visible badge attached to it. The background shows an indoor setting with a window and some office equipment, including a monitor displaying text. Another person is partially visible in the background, sitting at a desk and wearing glasses and a dark shirt, engaged in an activity such as reading or writing. The lighting is bright, likely from overhead fluorescent lights, and the overall environment appears to be a workspace or office area with a modern design featuring large windows and a clean, organized layout.",
+        "compliant": false,
+        "violations": [
+          "No TreeHacks badge is visible on the person's attire."
+        ]
+      },
+      {
+        "person_id": "Person 2",
+        "appearance": "Partially visible, wearing glasses and a dark shirt, engaged in an activity such as reading or writing at a desk in the background. The background shows an indoor setting with a window and some office equipment, including a monitor displaying text. Another person is partially visible in the background, sitting at a desk and wearing glasses and a dark shirt, engaged in an activity such as reading or writing. The lighting is bright, likely from overhead fluorescent lights, and the overall environment appears to be a workspace or office area with a modern design featuring large windows and a clean, organized layout.",
+        "compliant": true,
+        "violations": []
+      }
+    ],
+    "violations": [
+      {
+        "subject": "Person 1",
+        "rule": "badge",
+        "description": "The person is not wearing a TreeHacks badge, which violates the rule requiring badge wear."
+      }
+    ],
+    "verdicts": [
+      {
+        "rule_description": "If a person doesn't wear a TreeHacks badge, alert me",
+        "compliant": false,
+        "severity": "high",
+        "reason": "Person 1 is not wearing a TreeHacks badge, thus violating the rule."
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "compliant",
+    "violations": []
+  },
+  "source": "laptop_sync"
+}

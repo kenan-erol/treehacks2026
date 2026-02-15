@@ -1,0 +1,33 @@
+{
+  "obs": {
+    "type": "timeline_batch",
+    "start_time": "21:40:07",
+    "end_time": "21:40:07",
+    "event_count": 1,
+    "events": [
+      {
+        "time": "21:40:07",
+        "observation": [
+          {
+            "first_name": "Randy",
+            "last_name": "Lopez",
+            "affiliation": "HACKER",
+            "badge_color": "green"
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overall_status": "non_compliant",
+    "violations": [
+      {
+        "rule": "Occupancy",
+        "subject": "Unknown Person",
+        "description": "More than 10 people in work zone."
+      }
+    ],
+    "timestamp": "2026-02-14T21:40:19.270236",
+    "risk_score": 0
+  }
+}
