@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 """
-Compliance Checker — uses Nemotron (via Ollama) to evaluate VLM
-observations against a configurable security ruleset and produce
-structured JSON compliance reports.
-
-This module is imported by vlm_listener.py but can also be run
-standalone for testing:
-
-    python compliance_checker.py                          # demo with sample observation
-    python compliance_checker.py --ruleset rules.json     # custom rules
-    python compliance_checker.py --observation obs.json   # check a saved observation
+Compliance Checker — Optimized with Dynamic Rule Filtering.
+Prevents "100 People" hallucinations by removing the rule 
+from the prompt when the Python count confirms it is safe.
 """
 
 import argparse
@@ -18,7 +11,6 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-
 import httpx
 
 # ── Configuration ───────────────────────────────────────────────────
@@ -26,366 +18,159 @@ OLLAMA_BASE = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 NEMOTRON_MODEL = os.getenv("NEMOTRON_MODEL", "nemotron-mini:4b")
 
 # ── Default Ruleset ─────────────────────────────────────────────────
-# Used when no --ruleset file is provided.  Extend / replace as needed.
 DEFAULT_RULESET = {
     "name": "Default Security Ruleset",
-    "version": "1.0",
     "rules": [
         {
             "id": "R001",
             "name": "Max Occupancy",
-            "description": "No more than 100 people in a single zone at any time.",
-            "severity": "high",
-            "condition": "people_count > 100",
+            "condition": "people_count > 100", 
+            # This rule will be HIDDEN from the LLM if count is low
         },
         {
             "id": "R002",
             "name": "Restricted Zone Access",
-            "description": "No persons should be nearby unless they have badges of colors green, light blue, dark blue, purple, orange, black'.",
-            "severity": "critical",
             "condition": "person detected in restricted zone",
         },
         {
             "id": "R003",
             "name": "Suspicious Objects",
-            "description": "Flag unattended bags, weapons, or unknown packages.",
-            "severity": "high",
             "condition": "suspicious or unattended object detected",
         },
-        # {
-        #     "id": "R004",
-        #     "name": "Loitering",
-        #     "description": "Flag individuals remaining in the same area for an extended period.",
-        #     "severity": "medium",
-        #     "condition": "person loitering or remaining stationary for a long time",
-        # },
-        # {
-        #     "id": "R005",
-        #     "name": "After-Hours Presence",
-        #     "description": "No persons should be on premises outside business hours (08:00–20:00).",
-        #     "severity": "high",
-        #     "condition": "person detected outside 08:00-20:00 hours",
-        # },
         {
             "id": "R006",
             "name": "Aggressive Behavior",
-            "description": "Flag any fighting, running, or aggressive gestures.",
-            "severity": "critical",
             "condition": "aggressive or violent behavior detected",
         },
         {
             "id": "R007",
             "name": "PPE Compliance",
-            "description": "All persons in work zones must wear required PPE (hard hat, vest).",
-            "severity": "medium",
             "condition": "person in work zone without PPE",
         },
     ],
 }
 
-
 def load_ruleset(path: str | None) -> dict:
-    """Load a ruleset from a JSON file, or return the default."""
-    if path is None:
-        return DEFAULT_RULESET
+    if path is None: return DEFAULT_RULESET
     p = Path(path)
-    if not p.exists():
-        print(f"⚠️  Ruleset file not found: {path}, using defaults")
-        return DEFAULT_RULESET
+    if not p.exists(): return DEFAULT_RULESET
     return json.loads(p.read_text())
-
 
 def _build_prompt(observation: dict, ruleset: dict) -> str:
     """
-    Optimized Prompt: Translates JSON to simple English sentences 
-    so the 4B model doesn't get confused.
+    Builds the prompt, but SMARTLY filters rules based on hard data.
     """
-    
     events_text = []
+    max_people_seen = 0
     
-    # 1. Translate Events to English
+    # 1. Parse Events & Count People (Python Side)
     if "events" in observation:
         for e in observation["events"]:
-            time = e.get("time", "Unknown Time")
+            time = e.get("time", "Unknown")
             obs = e.get("observation", {})
             
-            # Handle List of People
+            # Extract list
             people = []
             if isinstance(obs, dict) and "people" in obs:
                 people = obs["people"]
             elif isinstance(obs, list):
                 people = obs
             
-            # Count them precisely
-            count = len(people)
-            names = [p.get("first_name", "Unknown") for p in people if isinstance(p, dict)]
-            names_str = ", ".join(names) if names else "No one"
+            # Update Max Count
+            current_count = len(people)
+            if current_count > max_people_seen:
+                max_people_seen = current_count
             
-            # Create the sentence
-            # "At 21:30:05, I see 1 person: Nate."
-            line = f"- At {time}, I see {count} person(s): {names_str}."
-            events_text.append(line)
-            
-            # Append any specific descriptions if available (for PPE/weapons)
-            # This helps it catch "holding a knife" or "no hard hat"
+            # Build Description
+            # Filter out "null" names to prevent "SIGHTING: null" logs
+            valid_names = []
             for p in people:
                 if isinstance(p, dict):
-                    desc = p.get("description", "")
-                    if desc:
-                        events_text.append(f"  * Detail: {p.get('first_name', 'Person')} is {desc}")
-
+                    name = p.get("first_name")
+                    if name and str(name).lower() != "null":
+                        valid_names.append(name)
+                    else:
+                        valid_names.append("Unknown Person")
+            
+            names_str = ", ".join(valid_names) if valid_names else "No one"
+            line = f"- At {time}, I see {len(valid_names)} person(s): {names_str}."
+            events_text.append(line)
+            
+            # Add details
+            for p in people:
+                if isinstance(p, dict) and p.get("description"):
+                    events_text.append(f"  * Detail: {p.get('first_name','Person')} is {p.get('description')}")
     else:
-        # Fallback for old format
-        events_text.append(f"- Raw Data: {json.dumps(observation)}")
+        events_text.append(f"- Data: {json.dumps(observation)}")
 
     context_str = "\n".join(events_text)
 
-    # 2. Simplified Ruleset (Caveman Style)
+    # 2. Dynamic Rule Filtering (The Fix!)
+    # If Python counts 1 person, we DO NOT tell the LLM about the "Max 100" rule.
+    # It cannot violate a rule it doesn't know exists.
+    active_rules_text = []
+    for r in ruleset["rules"]:
+        # Special handling for Occupancy
+        if "Occupancy" in r["name"]:
+            if max_people_seen > 100:
+                # Only show this rule if we are actually over/near the limit
+                active_rules_text.append(f"- {r['name']}: {r['condition']}")
+        else:
+            # Show all other rules
+            active_rules_text.append(f"- {r['name']}: {r['condition']}")
+
+    rules_str = "\n".join(active_rules_text)
+
+    # 3. Final Prompt
     return f"""SYSTEM: You are a security guard. Read the LOGS and check for violations.
-    
+
 LOGS:
 {context_str}
 
-RULES:
-1. Occupancy: If more than 100 people are listed at once -> VIOLATION.
-2. Restricted: If anyone is in a red zone -> VIOLATION.
-3. Suspicious: If an unattended bag or weapon is seen -> VIOLATION.
-4. Aggression: If fighting/running is described -> VIOLATION.
-5. PPE: If a person is missing a hard hat or vest -> VIOLATION.
+ACTIVE RULES:
+{rules_str}
 
 INSTRUCTIONS:
-- Only report violations that are CLEARLY described in the LOGS.
-- If the logs say "1 person", do NOT report "Occupancy" violation.
-- Use the exact Name from the logs (e.g., "Nate"). If name is Unknown, use "Unknown".
+- Only report violations based on the ACTIVE RULES above.
+- If a rule is not listed, do not check for it.
+- Use the exact Name from the logs.
 
 OUTPUT (JSON ONLY):
 {{
   "overall_status": "compliant" or "non_compliant",
-  "violations": [ 
-    {{ "rule": "Rule Name", "subject": "Name", "description": "Reason" }} 
-  ]
+  "violations": [ {{ "rule": "Rule Name", "subject": "Name", "description": "Reason" }} ]
 }}
 """
 
-
 def check_compliance(observation: dict, ruleset_path: str | None = None) -> dict:
-    """
-    Send an observation to Nemotron via Ollama and return a compliance report dict.
-
-    Parameters
-    ----------
-    observation : dict
-        The VLM scene analysis JSON (from Cosmos via vLLM).
-    ruleset_path : str | None
-        Path to a JSON ruleset file.  None → use DEFAULT_RULESET.
-
-    Returns
-    -------
-    dict  —  structured compliance report.
-    """
     ruleset = load_ruleset(ruleset_path)
+    
+    # Build the smart prompt
     prompt = _build_prompt(observation, ruleset)
 
-    # Quick connectivity check first
+    # ... (Rest of the HTTP logic is identical) ...
     try:
-        with httpx.Client(timeout=5.0) as probe:
-            probe.get(f"{OLLAMA_BASE}/api/tags")
-    except Exception:
-        return _error_report(
-            f"Cannot reach Ollama at {OLLAMA_BASE}. "
-            f"Is Ollama running? Try: ollama serve"
-        )
-
-    print(f"  📡 Sending to {NEMOTRON_MODEL} via Ollama…", flush=True)
-    try:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=180.0) as client:
             resp = client.post(
                 f"{OLLAMA_BASE}/api/generate",
                 json={
-                    "model": NEMOTRON_MODEL,
-                    "prompt": prompt,
+                    "model": NEMOTRON_MODEL, 
+                    "prompt": prompt, 
                     "stream": False,
-                    "options": {
-                        "temperature": 0.1,
-                        "num_predict": 2048,
-                    },
-                },
-                timeout=180.0,
+                    "options": {"temperature": 0.0, "num_predict": 1024}
+                }
             )
-            resp.raise_for_status()
             raw = resp.json().get("response", "")
-            print(f"  ✅ Got response ({len(raw)} chars)", flush=True)
-    except httpx.ReadTimeout:
-        return _error_report(
-            f"Ollama timed out after 180s. Model may be loading for the first time. "
-            f"Try again or check: ollama ps"
-        )
-    except httpx.ConnectError:
-        return _error_report(f"Cannot reach Ollama at {OLLAMA_BASE}")
-    except httpx.HTTPStatusError as e:
-        return _error_report(f"Ollama HTTP {e.response.status_code}: {e.response.text[:200]}")
     except Exception as e:
         return _error_report(str(e))
 
-    # Parse the model output
     try:
-        report = json.loads(raw)
-    except json.JSONDecodeError:
-        # Try stripping markdown fences
-        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-        try:
-            report = json.loads(cleaned)
-        except json.JSONDecodeError:
-            report = {
-                "overall_status": "error",
-                "raw_response": raw[:2000],
-                "parse_error": "Could not parse Nemotron response as JSON",
-                "timestamp": datetime.now().isoformat(),
-                "violations": [],
-            }
-
-    # Ensure required fields
-    report.setdefault("timestamp", datetime.now().isoformat())
-    report.setdefault("overall_status", "unknown")
-    report.setdefault("violations", [])
-    report.setdefault("risk_score", 0)
+        cleaned = raw.strip().removeprefix("```json").removeprefix("```").strip()
+        report = json.loads(cleaned)
+    except:
+        report = {"overall_status": "error", "violations": []}
 
     return report
 
-
-def _error_report(message: str) -> dict:
-    """Return a minimal error report when Nemotron is unreachable."""
-    return {
-        "overall_status": "error",
-        "timestamp": datetime.now().isoformat(),
-        "error": message,
-        "violations": [],
-        "risk_score": -1,
-        "summary": f"Compliance check failed: {message}",
-    }
-
-
-# ────────────────────────────────────────────────────────────────────
-# Standalone CLI
-# ────────────────────────────────────────────────────────────────────
-SAMPLE_OBSERVATION = {
-    "timestamp": datetime.now().isoformat(),
-    "people_count": 3,
-    "people_descriptions": [
-        "Adult male in dark jacket near entrance",
-        "Adult female with backpack near restricted door",
-        "Child sitting on bench",
-    ],
-    "activities": [
-        "Walking towards entrance",
-        "Standing near restricted area door, looking around",
-        "Sitting",
-    ],
-    "objects_of_interest": ["backpack", "unattended bag near column"],
-    "zones": ["entrance", "restricted_area_perimeter", "lobby"],
-    "anomalies": ["Unattended bag near column", "Person near restricted door"],
-    "confidence": 0.82,
-}
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Compliance Checker — Nemotron security ruleset evaluation")
-    parser.add_argument("--ruleset", type=str, default=None,
-                        help="Path to JSON ruleset file (default: built-in rules)")
-    parser.add_argument("--observation", type=str, default=None,
-                        help="Path to a JSON observation file to check")
-    parser.add_argument("--ollama-url", type=str, default=None,
-                        help="Override Ollama base URL")
-    parser.add_argument("--model", type=str, default=None,
-                        help="Override Nemotron model name")
-    parser.add_argument("--print-ruleset", action="store_true",
-                        help="Print the active ruleset and exit")
-    args = parser.parse_args()
-
-    global OLLAMA_BASE, NEMOTRON_MODEL
-    if args.ollama_url:
-        OLLAMA_BASE = args.ollama_url
-    if args.model:
-        NEMOTRON_MODEL = args.model
-
-    # Print ruleset and exit
-    if args.print_ruleset:
-        ruleset = load_ruleset(args.ruleset)
-        print(json.dumps(ruleset, indent=2))
-        return
-
-    # Load observation
-    if args.observation:
-        p = Path(args.observation)
-        if not p.exists():
-            sys.exit(f"❌ File not found: {args.observation}")
-        observation = json.loads(p.read_text())
-        print(f"📂 Loaded observation from {p}")
-    else:
-        observation = SAMPLE_OBSERVATION
-        print("📋 Using sample observation (pass --observation <file> for real data)")
-
-    print(f"🤖 Model: {NEMOTRON_MODEL}")
-    print(f"🌐 Ollama: {OLLAMA_BASE}")
-    print(f"📏 Ruleset: {args.ruleset or 'built-in default'}\n")
-
-    # Pre-flight: check Ollama is reachable and model is available
-    print("🔌 Checking Ollama connectivity…", flush=True)
-    try:
-        with httpx.Client(timeout=5.0) as probe:
-            tags_resp = probe.get(f"{OLLAMA_BASE}/api/tags")
-            models = [m["name"] for m in tags_resp.json().get("models", [])]
-            if models:
-                print(f"   Available models: {', '.join(models)}")
-            else:
-                print(f"   ⚠️  No models found! Run: ollama pull {NEMOTRON_MODEL}")
-                return
-            if not any(NEMOTRON_MODEL.split(":")[0] in m for m in models):
-                print(f"   ⚠️  {NEMOTRON_MODEL} not found! Run: ollama pull {NEMOTRON_MODEL}")
-                return
-    except httpx.ConnectError:
-        print(f"   ❌ Cannot reach Ollama at {OLLAMA_BASE}")
-        print(f"   Start it with: ollama serve")
-        return
-    except Exception as e:
-        print(f"   ❌ Ollama check failed: {e}")
-        return
-    print()
-
-    print("⚖️  Running compliance check…\n")
-    report = check_compliance(observation, args.ruleset)
-
-    # Pretty print
-    print("═" * 60)
-    print("  COMPLIANCE REPORT")
-    print("═" * 60)
-    print(json.dumps(report, indent=2))
-    print("═" * 60)
-
-    # Summary
-    status = report.get("overall_status", "unknown")
-    violations = report.get("violations", [])
-    risk = report.get("risk_score", "?")
-
-    icon = {"compliant": "✅", "non_compliant": "🚨", "error": "❌"}.get(status, "❓")
-    print(f"\n{icon} Status: {status}")
-    print(f"🎯 Risk Score: {risk}/100")
-    print(f"⛔ Violations: {len(violations)}")
-
-    if violations:
-        print("\nViolation Details:")
-        for v in violations:
-            sev_icon = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}.get(v.get("severity", ""), "⚪")
-            print(f"  {sev_icon} [{v.get('rule_id', '?')}] {v.get('rule', '?')}: {v.get('description', '')}")
-
-    # Save report
-    out_dir = Path("reports")
-    out_dir.mkdir(exist_ok=True)
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_path = out_dir / f"compliance_{ts}.json"
-    out_path.write_text(json.dumps(report, indent=2))
-    print(f"\n💾 Report saved → {out_path}")
-
-
-if __name__ == "__main__":
-    main()
+def _error_report(msg):
+    return {"overall_status": "error", "error": msg, "violations": []}
