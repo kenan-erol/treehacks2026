@@ -147,7 +147,7 @@ LOGS:
 {context_str}
 
 RULES:
-1. Occupancy: If more than 10 people are listed at once -> VIOLATION.
+1. Occupancy: If more than 100 people are listed at once -> VIOLATION.
 2. Restricted: If anyone is in a red zone -> VIOLATION.
 3. Suspicious: If an unattended bag or weapon is seen -> VIOLATION.
 4. Aggression: If fighting/running is described -> VIOLATION.
