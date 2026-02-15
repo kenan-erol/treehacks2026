@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-VLM Listener — reverse-proxy with Rate Limiting.
-Prevents flooding Ollama by skipping frames if the previous check is still running.
+VLM Listener — reverse-proxy with Rate Limiting & Startup Checks.
 """
 
 import argparse
 import asyncio
 import json
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 
@@ -23,28 +23,49 @@ VLLM_BASE = ""  # Set in main()
 PROXY_PORT = int(os.getenv("PROXY_PORT", "8001"))
 REPORT_DIR = Path("reports")
 REPORT_DIR.mkdir(exist_ok=True)
-
-app = FastAPI(title="VLM Compliance Proxy")
+COMPLIANCE_BUSY = False
 
 # Shared async HTTP client
 _client: httpx.AsyncClient | None = None
 _idx = 0
 
-# 🔴 RATE LIMITING FLAG: Prevents flooding Ollama
-COMPLIANCE_BUSY = False
-
-@app.on_event("startup")
-async def _startup():
+# ── Lifespan (Startup/Shutdown) ─────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global _client
+    
+    # 1. Setup vLLM Client
     _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
     print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
     print(f"📁 Reports will be saved to {REPORT_DIR.resolve()}")
 
-@app.on_event("shutdown")
-async def _shutdown():
+    # 2. Check Ollama Status
+    print("🔌 Testing connection to Ollama...")
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as ol_client:
+            resp = await ol_client.get("http://localhost:11434/api/tags")
+            if resp.status_code == 200:
+                models = [m['name'] for m in resp.json().get('models', [])]
+                if any("nemotron-mini:4b" in m for m in models):
+                    print("✅ Ollama is ready and 'nemotron-mini:4b' is available.")
+                else:
+                    print("⚠️  WARNING: 'nemotron-mini:4b' not found in Ollama library!")
+                    print("👉 Run: ollama pull nemotron-mini:4b")
+            else:
+                print(f"⚠️  Ollama responded with error: {resp.status_code}")
+    except Exception as e:
+        print(f"❌ Could not reach Ollama: {e}")
+        print("   Ensure 'ollama serve' is running.")
+
+    yield
+    
+    # Shutdown
     if _client:
         await _client.aclose()
 
+app = FastAPI(title="VLM Compliance Proxy", lifespan=lifespan)
+
+# ── Routes ──────────────────────────────────────────────────────────
 @app.post("/v1/chat/completions")
 async def proxy_chat_completions(request: Request):
     global _idx, COMPLIANCE_BUSY
@@ -68,15 +89,15 @@ async def proxy_chat_completions(request: Request):
         vllm_data = resp.json()
         vlm_text = vllm_data["choices"][0]["message"]["content"]
     except Exception:
-        pass  # Failed to parse, probably empty or error
+        pass
 
     # 3. Trigger Compliance Check (ONLY IF IDLE)
     if vlm_text:
-        # Check if we are already running a compliance check
         if COMPLIANCE_BUSY:
-            print(f"[{ts}] ⏳ Skipping compliance (previous check still running)...")
+            # Silent skip or minimal log to reduce noise
+            print(f"[{ts}] ⏳ Skipping compliance (busy)...", end="\r") 
         else:
-            print(f"[{ts}] 🔍 VLM Output: {vlm_text[:50]}...")
+            print(f"\n[{ts}] 🔍 VLM Output: {vlm_text[:50]}...")
             observation = _parse_vlm_output(vlm_text)
             
             # Mark as busy and start task
@@ -92,7 +113,6 @@ async def proxy_chat_completions(request: Request):
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_passthrough(request: Request, path: str):
-    """Pass through all other requests (like model listing) untouched."""
     url = f"/{path}"
     body = await request.body()
     try:
@@ -106,6 +126,7 @@ async def proxy_passthrough(request: Request, path: str):
     except Exception as e:
         return Response(content=json.dumps({"error": str(e)}), status_code=502)
 
+# ── Helpers ─────────────────────────────────────────────────────────
 def _parse_vlm_output(text: str) -> dict:
     try:
         return json.loads(text)
@@ -117,12 +138,11 @@ def _parse_vlm_output(text: str) -> dict:
             return {"raw_description": text}
 
 async def _run_compliance_safe(observation: dict, idx: int, ts: str):
-    """Wrapper to run compliance check and ALWAYS release the busy flag."""
     global COMPLIANCE_BUSY
     try:
-        print(f"[{ts}] ⚖️  Starting Compliance Check on Nemotron...")
+        print(f"[{ts}] ⚖️  Running Compliance Check...")
         
-        # Run the blocking function in a separate thread
+        # Run blocking check in thread
         report = await asyncio.to_thread(check_compliance, observation, None)
 
         status = report.get("overall_status", "unknown")
@@ -130,19 +150,14 @@ async def _run_compliance_safe(observation: dict, idx: int, ts: str):
         
         icon = "✅" if status == "compliant" else "🚨"
         print(f"[{datetime.now().strftime('%H:%M:%S')}] {icon} RESULT: {status.upper()} | Violations: {len(violations)}")
-
-        if violations:
-            for v in violations:
-                print(f"       ⛔ {v.get('rule', 'Rule')}: {v.get('description', '')[:80]}")
-
+        
         # Save to disk
         save_path = REPORT_DIR / f"report_{idx:04d}.json"
         save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
 
     except Exception as e:
-        print(f"[{ts}] ❌ Compliance Check Error: {e}")
+        print(f"[{ts}] ❌ Error: {e}")
     finally:
-        # CRITICAL: Always release the lock so the next frame can be processed
         COMPLIANCE_BUSY = False
 
 def main():
