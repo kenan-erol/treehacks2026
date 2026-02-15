@@ -45,13 +45,35 @@ _idx = 0
 async def lifespan(app: FastAPI):
     global _client
     
-    # 1. Setup vLLM Client
+    # 1. Setup vLLM Client (The Eyes)
     _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
     print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
-    print("🛡️  Guardrails Active: Filtering empty lists & fixing counts")
     
-    # 2. Start the Background Batch Processor
+    # 2. AUTO-INITIALIZE NEMOTRON (The Brain) 
+    # This replaces the need for 'ollama run' in a separate terminal!
+    print("🧠 Waking up Nemotron... (This may take 5-10 seconds)")
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as ollama:
+            # Send a dummy prompt to force-load the model
+            resp = await ollama.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": "nemotron-mini:4b", 
+                    "prompt": "system check", 
+                    "stream": False
+                }
+            )
+            if resp.status_code == 200:
+                print("✅ Nemotron is LOADED and ready on GPU.")
+            else:
+                print(f"⚠️  Ollama Warning: {resp.text}")
+    except Exception as e:
+        print(f"❌ Could not initialize Nemotron: {e}")
+        print("   (Make sure 'ollama serve' is running in the background!)")
+
+    # 3. Start the Background Batch Processor
     print("⚙️  Starting Background Batch Processor...")
+    print("🛡️  Guardrails: Active (Filtering [] and fixing counts)")
     asyncio.create_task(batch_processor())
 
     yield
