@@ -34,9 +34,9 @@ DEFAULT_RULESET = {
         {
             "id": "R001",
             "name": "Max Occupancy",
-            "description": "No more than 1000 people in a single zone at any time.",
+            "description": "No more than 100 people in a single zone at any time.",
             "severity": "high",
-            "condition": "people_count > 1000",
+            "condition": "people_count > 100",
         },
         {
             "id": "R002",
@@ -115,7 +115,7 @@ def _build_prompt(observation: dict, ruleset: dict) -> str:
     return f"""SYSTEM: You are a security guard. Analyze the OBSERVATION logs below.
     
 RULES:
-1. Occupancy: Max 10 people.
+1. Occupancy: Max 100 people.
 2. Restricted: No people in red zones.
 3. Suspicious: No unattended bags/weapons.
 4. Aggression: No fighting.
