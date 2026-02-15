@@ -1,279 +1,239 @@
 #!/usr/bin/env python3
 """
-VLM Listener — captures real-time scene analysis from the Cosmos VLM
-served by vLLM (port 8000) and forwards each observation to the
-Nemotron compliance checker.
+VLM Listener — reverse-proxy that sits between the live-vlm-webui
+and vLLM, intercepting every VLM response in real-time and piping it
+through the Nemotron compliance checker.
 
 Architecture
 ────────────
-  Live WebUI ──► vLLM (Cosmos) :8000
+  Live WebUI ──► vlm_listener :8001 ──► vLLM (Cosmos) :8000
                       │
-              vlm_listener.py   (this file)
-                      │  polls /v1/chat/completions
+                      │  intercepts every response
                       ▼
-           compliance_checker   (imported)
+              compliance_checker (Nemotron via Ollama)
                       │
                       ▼
-              JSON reports  →  reports/
+               reports/ (JSON files)
 
-Usage
+Setup
 ─────
-    python vlm_listener.py                        # webcam via OpenCV
-    python vlm_listener.py --mode poll            # poll vLLM with your own frames
-    python vlm_listener.py --mode stream          # tail the webui SSE stream
-    python vlm_listener.py --ruleset rules.json   # custom ruleset file
+  1. Start vLLM Docker as normal (port 8000)
+  2. Run:  python vlm_listener.py
+  3. Point the live-vlm-webui at port 8001 instead of 8000
+     (change the "API Base" field in the webui to http://<dgx-ip>:8001/v1)
+
+That's it — every VLM query flows through this proxy transparently.
 """
 
 import argparse
-import base64
+import asyncio
 import json
 import os
-import sys
-import time
 from datetime import datetime
 from pathlib import Path
 
-import cv2
 import httpx
+from fastapi import FastAPI, Request, Response
+import uvicorn
 
 # ── Local import ────────────────────────────────────────────────────
 from compliance_checker import check_compliance
 
-# ── Defaults ────────────────────────────────────────────────────────
+# ── Config ──────────────────────────────────────────────────────────
 VLLM_BASE = os.getenv("VLLM_BASE_URL", "http://localhost:8000")
-VLLM_MODEL = os.getenv("VLLM_MODEL", "nvidia/Cosmos-Reason2-8B")  # as seen by vLLM
-POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "2.0"))           # seconds
+PROXY_PORT = int(os.getenv("PROXY_PORT", "8001"))
 REPORT_DIR = Path("reports")
+REPORT_DIR.mkdir(exist_ok=True)
 
-# ── Prompt used for the VLM ─────────────────────────────────────────
-SCENE_PROMPT = """You are a security monitoring AI. Analyze this image and return a JSON object with:
-{
-  "timestamp": "<current time>",
-  "people_count": <number of people visible>,
-  "people_descriptions": ["<description of each person>"],
-  "activities": ["<what each person is doing>"],
-  "objects_of_interest": ["<notable objects like bags, tools, vehicles>"],
-  "zones": ["<areas where people are located>"],
-  "anomalies": ["<anything unusual or suspicious>"],
-  "confidence": <0.0-1.0>
-}
-Return ONLY valid JSON, no markdown fences."""
+app = FastAPI(title="VLM Compliance Proxy")
+
+# Shared async HTTP client (created on startup)
+_client: httpx.AsyncClient | None = None
+
+# Counter for reports
+_idx = 0
 
 
-def encode_frame(frame) -> str:
-    """Encode an OpenCV frame as a base64 JPEG string."""
-    _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
-    return base64.b64encode(buf.tobytes()).decode("utf-8")
+@app.on_event("startup")
+async def _startup():
+    global _client
+    _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
+    print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
+    print(f"📁 Reports will be saved to {REPORT_DIR.resolve()}")
 
 
-def query_vllm(image_b64: str, client: httpx.Client) -> dict:
-    """Send a single image to the vLLM Cosmos endpoint and return parsed JSON."""
-    payload = {
-        "model": VLLM_MODEL,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": SCENE_PROMPT},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_b64}",
-                        },
-                    },
-                ],
-            }
-        ],
-        "max_tokens": 1024,
-        "temperature": 0.2,
-    }
+@app.on_event("shutdown")
+async def _shutdown():
+    if _client:
+        await _client.aclose()
 
-    resp = client.post(f"{VLLM_BASE}/v1/chat/completions", json=payload, timeout=30.0)
-    resp.raise_for_status()
-    data = resp.json()
 
-    raw_text = data["choices"][0]["message"]["content"]
+# ────────────────────────────────────────────────────────────────────
+# The key endpoint: intercept /v1/chat/completions
+# ────────────────────────────────────────────────────────────────────
+@app.post("/v1/chat/completions")
+async def proxy_chat_completions(request: Request):
+    global _idx
+    body = await request.body()
+    ts = datetime.now().strftime("%H:%M:%S")
 
-    # Try to parse the model output as JSON; fall back to wrapping it
+    print(f"[{ts}] 📨 Incoming request → forwarding to vLLM…")
+
+    # Forward the request exactly as-is to vLLM
     try:
-        return json.loads(raw_text)
+        resp = await _client.post(
+            "/v1/chat/completions",
+            content=body,
+            headers={"Content-Type": "application/json"},
+        )
+    except Exception as e:
+        print(f"[{ts}] ❌ vLLM unreachable: {e}")
+        return Response(
+            content=json.dumps({"error": str(e)}),
+            status_code=502,
+            media_type="application/json",
+        )
+
+    # Parse the vLLM response
+    try:
+        vllm_data = resp.json()
+    except Exception:
+        # Not JSON — just pass through transparently
+        print(f"[{ts}] ⚠️  Non-JSON response from vLLM, passing through")
+        return Response(content=resp.content, status_code=resp.status_code,
+                        media_type=resp.headers.get("content-type", "application/json"))
+
+    # Extract the VLM's text output
+    vlm_text = ""
+    try:
+        vlm_text = vllm_data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError):
+        pass
+
+    if vlm_text:
+        print(f"[{ts}] 🔍 VLM says: {vlm_text[:150]}…")
+
+        # Try to parse VLM output as JSON
+        observation = _parse_vlm_output(vlm_text)
+
+        # Run compliance in background so we don't slow down the webui
+        asyncio.create_task(_run_compliance_async(observation, _idx, ts))
+        _idx += 1
+
+    # Return the original vLLM response to the webui unchanged
+    return Response(
+        content=resp.content,
+        status_code=resp.status_code,
+        media_type=resp.headers.get("content-type", "application/json"),
+    )
+
+
+# ────────────────────────────────────────────────────────────────────
+# Catch-all: proxy everything else (model list, health, etc.)
+# ────────────────────────────────────────────────────────────────────
+@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+async def proxy_passthrough(request: Request, path: str):
+    url = f"/{path}"
+    body = await request.body()
+
+    try:
+        resp = await _client.request(
+            method=request.method,
+            url=url,
+            content=body,
+            headers={k: v for k, v in request.headers.items()
+                     if k.lower() not in ("host", "content-length")},
+        )
+        return Response(
+            content=resp.content,
+            status_code=resp.status_code,
+            media_type=resp.headers.get("content-type"),
+        )
+    except Exception as e:
+        return Response(
+            content=json.dumps({"error": str(e)}),
+            status_code=502,
+            media_type="application/json",
+        )
+
+
+# ────────────────────────────────────────────────────────────────────
+# Helpers
+# ────────────────────────────────────────────────────────────────────
+def _parse_vlm_output(text: str) -> dict:
+    """Try to parse VLM text as JSON; wrap in a dict if it fails."""
+    try:
+        return json.loads(text)
     except json.JSONDecodeError:
-        # Strip possible markdown fences
-        cleaned = raw_text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        cleaned = text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
         try:
             return json.loads(cleaned)
         except json.JSONDecodeError:
             return {
-                "raw_description": raw_text,
+                "raw_description": text,
                 "timestamp": datetime.now().isoformat(),
-                "parse_error": True,
             }
 
 
-def save_observation(observation: dict, report: dict, idx: int):
-    """Persist an observation + compliance report to disk."""
-    REPORT_DIR.mkdir(exist_ok=True)
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    path = REPORT_DIR / f"report_{ts}_{idx:04d}.json"
-    combined = {
-        "observation": observation,
-        "compliance_report": report,
-    }
-    path.write_text(json.dumps(combined, indent=2))
-    return path
-
-
-# ────────────────────────────────────────────────────────────────────
-# Mode: poll  —  capture webcam frames, send to vLLM, then compliance
-# ────────────────────────────────────────────────────────────────────
-def run_poll_mode(ruleset_path: str | None, camera_id: int = 0):
-    """Grab frames from the local webcam, query vLLM, run compliance."""
-    cap = cv2.VideoCapture(camera_id)
-    if not cap.isOpened():
-        sys.exit("❌ Cannot open webcam")
-
-    print(f"📹 Webcam opened (camera {camera_id})")
-    print(f"🌐 vLLM endpoint: {VLLM_BASE}")
-    print(f"⏱  Poll interval: {POLL_INTERVAL}s")
-    print(f"📁 Reports dir:   {REPORT_DIR.resolve()}\n")
-
-    idx = 0
-    client = httpx.Client()
-
+async def _run_compliance_async(observation: dict, idx: int, ts: str):
+    """Run the compliance check in a thread pool (it's sync/blocking)."""
     try:
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                print("⚠️  Frame grab failed, retrying…")
-                time.sleep(1)
-                continue
+        print(f"[{ts}] ⚖️  Running compliance check (background)…")
+        # Run blocking Ollama call in a thread so we don't block the event loop
+        report = await asyncio.to_thread(check_compliance, observation, None)
 
-            ts = datetime.now().strftime("%H:%M:%S")
-            print(f"[{ts}] 📸 Captured frame, querying VLM…")
+        status = report.get("overall_status", "unknown")
+        violations = report.get("violations", [])
+        risk = report.get("risk_score", "?")
 
-            try:
-                image_b64 = encode_frame(frame)
-                observation = query_vllm(image_b64, client)
+        icon = "🚨" if violations else "✅"
+        print(f"[{ts}] {icon} Compliance: {status} | Risk: {risk}/100 | Violations: {len(violations)}")
 
-                # Pretty-print the VLM observation
-                print(f"[{ts}] 🔍 VLM observation:")
-                print(json.dumps(observation, indent=2)[:500])
+        if violations:
+            for v in violations:
+                print(f"       ⛔ {v.get('rule', '?')}: {v.get('description', '')[:100]}")
 
-                # ── Send to Nemotron compliance checker ──
-                print(f"[{ts}] ⚖️  Running compliance check…")
-                report = check_compliance(observation, ruleset_path)
+        # Save report
+        save_path = REPORT_DIR / f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{idx:04d}.json"
+        combined = {
+            "observation": observation,
+            "compliance_report": report,
+        }
+        save_path.write_text(json.dumps(combined, indent=2))
+        print(f"[{ts}] 💾 Saved → {save_path}")
 
-                status_icon = "🚨" if report.get("violations") else "✅"
-                print(f"[{ts}] {status_icon} Compliance: {report.get('overall_status', 'unknown')}")
-
-                if report.get("violations"):
-                    for v in report["violations"]:
-                        print(f"       ⛔ {v.get('rule', '?')}: {v.get('description', '')}")
-
-                # ── Save to disk ──
-                path = save_observation(observation, report, idx)
-                print(f"[{ts}] 💾 Saved → {path}\n")
-
-                idx += 1
-
-            except httpx.HTTPStatusError as e:
-                print(f"[{ts}] ❌ vLLM HTTP error: {e.response.status_code} — {e.response.text[:200]}")
-            except httpx.ConnectError:
-                print(f"[{ts}] ❌ Cannot reach vLLM at {VLLM_BASE}")
-            except Exception as e:
-                print(f"[{ts}] ❌ Error: {e}")
-
-            time.sleep(POLL_INTERVAL)
-
-    except KeyboardInterrupt:
-        print("\n🛑 Stopping VLM listener…")
-    finally:
-        cap.release()
-        client.close()
-
-
-# ────────────────────────────────────────────────────────────────────
-# Mode: stream  —  listen to an existing SSE / log stream
-#  (e.g. from the live-vlm-webui or a log file)
-# ────────────────────────────────────────────────────────────────────
-def run_stream_mode(ruleset_path: str | None, source: str | None = None):
-    """
-    Read VLM JSON outputs line-by-line from stdin or a log file,
-    run compliance on each, and save reports.
-
-    Usage examples:
-        docker logs -f <vllm_container> 2>&1 | python vlm_listener.py --mode stream
-        tail -f /var/log/vlm_output.jsonl   | python vlm_listener.py --mode stream
-        python vlm_listener.py --mode stream --source vlm_outputs.jsonl
-    """
-    if source:
-        fh = open(source, "r")
-        print(f"📂 Reading from file: {source}")
-    else:
-        fh = sys.stdin
-        print("📥 Reading VLM JSON from stdin (pipe docker logs or a JSONL file)")
-
-    print(f"📁 Reports dir: {REPORT_DIR.resolve()}\n")
-
-    idx = 0
-    try:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-
-            try:
-                observation = json.loads(line)
-            except json.JSONDecodeError:
-                # Not a JSON line — skip (e.g. log noise)
-                continue
-
-            ts = datetime.now().strftime("%H:%M:%S")
-            print(f"[{ts}] 🔍 VLM observation received")
-
-            report = check_compliance(observation, ruleset_path)
-
-            status_icon = "🚨" if report.get("violations") else "✅"
-            print(f"[{ts}] {status_icon} Compliance: {report.get('overall_status', 'unknown')}")
-
-            path = save_observation(observation, report, idx)
-            print(f"[{ts}] 💾 Saved → {path}\n")
-            idx += 1
-
-    except KeyboardInterrupt:
-        print("\n🛑 Stopping stream listener…")
-    finally:
-        if source:
-            fh.close()
+    except Exception as e:
+        print(f"[{ts}] ❌ Compliance check failed: {e}")
 
 
 # ────────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="VLM Listener — capture & forward Cosmos outputs")
-    parser.add_argument("--mode", choices=["poll", "stream"], default="poll",
-                        help="poll = webcam→vLLM→Nemotron; stream = read JSON from stdin/file")
-    parser.add_argument("--ruleset", type=str, default=None,
-                        help="Path to a JSON ruleset file for compliance checking")
-    parser.add_argument("--camera", type=int, default=0,
-                        help="Webcam device ID (default 0)")
-    parser.add_argument("--source", type=str, default=None,
-                        help="(stream mode) Path to a JSONL file of VLM outputs")
-    parser.add_argument("--vllm-url", type=str, default=None,
-                        help="Override vLLM base URL (default: http://localhost:8000)")
-    parser.add_argument("--interval", type=float, default=None,
-                        help="Override poll interval in seconds")
+    parser = argparse.ArgumentParser(
+        description="VLM Compliance Proxy — intercepts vLLM responses and runs Nemotron compliance checks"
+    )
+    parser.add_argument("--port", type=int, default=PROXY_PORT,
+                        help=f"Proxy listen port (default: {PROXY_PORT})")
+    parser.add_argument("--vllm-url", type=str, default=VLLM_BASE,
+                        help=f"vLLM backend URL (default: {VLLM_BASE})")
+    parser.add_argument("--host", type=str, default="0.0.0.0",
+                        help="Bind address (default: 0.0.0.0)")
     args = parser.parse_args()
 
-    global VLLM_BASE, POLL_INTERVAL
-    if args.vllm_url:
-        VLLM_BASE = args.vllm_url
-    if args.interval:
-        POLL_INTERVAL = args.interval
+    global VLLM_BASE
+    VLLM_BASE = args.vllm_url
 
-    if args.mode == "poll":
-        run_poll_mode(args.ruleset, args.camera)
-    else:
-        run_stream_mode(args.ruleset, args.source)
+    print("╔══════════════════════════════════════════════════╗")
+    print("║       VLM Compliance Proxy                      ║")
+    print("╠══════════════════════════════════════════════════╣")
+    print(f"║  Proxy:  http://{args.host}:{args.port}              ║")
+    print(f"║  vLLM:   {VLLM_BASE:<39} ║")
+    print(f"║  Reports: {str(REPORT_DIR.resolve()):<38} ║")
+    print("╠══════════════════════════════════════════════════╣")
+    print("║  Point your live-vlm-webui at this proxy port!  ║")
+    print("╚══════════════════════════════════════════════════╝")
+    print()
+
+    uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
 
 
 if __name__ == "__main__":

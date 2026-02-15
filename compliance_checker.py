@@ -161,6 +161,17 @@ def check_compliance(observation: dict, ruleset_path: str | None = None) -> dict
     ruleset = load_ruleset(ruleset_path)
     prompt = _build_prompt(observation, ruleset)
 
+    # Quick connectivity check first
+    try:
+        with httpx.Client(timeout=5.0) as probe:
+            probe.get(f"{OLLAMA_BASE}/api/tags")
+    except Exception:
+        return _error_report(
+            f"Cannot reach Ollama at {OLLAMA_BASE}. "
+            f"Is Ollama running? Try: ollama serve"
+        )
+
+    print(f"  📡 Sending to {NEMOTRON_MODEL} via Ollama…", flush=True)
     try:
         with httpx.Client() as client:
             resp = client.post(
@@ -174,10 +185,16 @@ def check_compliance(observation: dict, ruleset_path: str | None = None) -> dict
                         "num_predict": 2048,
                     },
                 },
-                timeout=60.0,
+                timeout=180.0,
             )
             resp.raise_for_status()
             raw = resp.json().get("response", "")
+            print(f"  ✅ Got response ({len(raw)} chars)", flush=True)
+    except httpx.ReadTimeout:
+        return _error_report(
+            f"Ollama timed out after 180s. Model may be loading for the first time. "
+            f"Try again or check: ollama ps"
+        )
     except httpx.ConnectError:
         return _error_report(f"Cannot reach Ollama at {OLLAMA_BASE}")
     except httpx.HTTPStatusError as e:
@@ -286,6 +303,29 @@ def main():
     print(f"🤖 Model: {NEMOTRON_MODEL}")
     print(f"🌐 Ollama: {OLLAMA_BASE}")
     print(f"📏 Ruleset: {args.ruleset or 'built-in default'}\n")
+
+    # Pre-flight: check Ollama is reachable and model is available
+    print("🔌 Checking Ollama connectivity…", flush=True)
+    try:
+        with httpx.Client(timeout=5.0) as probe:
+            tags_resp = probe.get(f"{OLLAMA_BASE}/api/tags")
+            models = [m["name"] for m in tags_resp.json().get("models", [])]
+            if models:
+                print(f"   Available models: {', '.join(models)}")
+            else:
+                print(f"   ⚠️  No models found! Run: ollama pull {NEMOTRON_MODEL}")
+                return
+            if not any(NEMOTRON_MODEL.split(":")[0] in m for m in models):
+                print(f"   ⚠️  {NEMOTRON_MODEL} not found! Run: ollama pull {NEMOTRON_MODEL}")
+                return
+    except httpx.ConnectError:
+        print(f"   ❌ Cannot reach Ollama at {OLLAMA_BASE}")
+        print(f"   Start it with: ollama serve")
+        return
+    except Exception as e:
+        print(f"   ❌ Ollama check failed: {e}")
+        return
+    print()
 
     print("⚖️  Running compliance check…\n")
     report = check_compliance(observation, args.ruleset)
