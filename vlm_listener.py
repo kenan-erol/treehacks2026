@@ -162,9 +162,10 @@ async def batch_processor():
     Infinite loop that:
     1. Waits for data in the queue
     2. Accumulates data for BATCH_INTERVAL seconds
-    3. Filters out EMPTY lists (Crucial Fix 1)
+    3. Filters out EMPTY lists
     4. Deduplicates identical sequential frames
-    5. Sends batch to Nemotron
+    5. PRINTS IDENTIFIED NAMES (New!)
+    6. Sends batch to Nemotron
     """
     last_processed_text = None
     
@@ -189,13 +190,11 @@ async def batch_processor():
         
         for ts, text in batch:
             # 1. Skip EMPTY lists/objects
-            # This prevents Nemotron from seeing "[]" and hallucinating violations
             if text == "[]" or text == "{}" or text == "null":
                 continue
 
-            # Parse to check deeper if needed (e.g. empty list inside dict)
             obs = _parse_vlm_output(text)
-            if not obs: # Double check emptiness after parse
+            if not obs: 
                 continue
                 
             # 2. Deduplication
@@ -209,12 +208,22 @@ async def batch_processor():
                 "observation": obs
             })
 
-        # If batch is empty (because everything was "[]" or duplicate), skip API call
+            # ──────── NEW PRINT STATEMENT ────────
+            # Extract and print names immediately
+            if isinstance(obs, dict) and "people" in obs:
+                names = [p.get("first_name", "Unknown") for p in obs["people"]]
+                print(f"[{ts}] 👁️  SIGHTING: {', '.join(names)}")
+            elif isinstance(obs, list):
+                # Handle list-of-objects format
+                names = [p.get("first_name", "Unknown") for p in obs if isinstance(p, dict)]
+                if names:
+                    print(f"[{ts}] 👁️  SIGHTING: {', '.join(names)}")
+            # ─────────────────────────────────────
+
         if not unique_observations:
-            # print(f"💤 Batch ignored (Empty/Duplicate)")
             continue
 
-        # Construct Timeline
+        # Construct Timeline & Run Compliance Check
         timeline_obs = {
             "type": "timeline_batch",
             "start_time": unique_observations[0]["time"],
@@ -223,7 +232,6 @@ async def batch_processor():
             "events": unique_observations
         }
 
-        # Run Compliance Check
         print(f"📦 Processing Batch: {len(batch)} frames -> {len(unique_observations)} valid events")
         asyncio.create_task(_run_compliance_batch(timeline_obs))
 
