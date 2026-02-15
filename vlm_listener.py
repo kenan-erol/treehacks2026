@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-VLM Listener — Minimalist.
-Only filters EMPTY lists. Does not touch data fields.
+VLM Listener — reverse-proxy with Rate Limiting & Startup Checks.
 """
 
 import argparse
@@ -20,169 +19,146 @@ import uvicorn
 from compliance_checker import check_compliance
 
 # ── Config ──────────────────────────────────────────────────────────
-VLLM_BASE = ""
+VLLM_BASE = ""  # Set in main()
 PROXY_PORT = int(os.getenv("PROXY_PORT", "8001"))
 REPORT_DIR = Path("reports")
 REPORT_DIR.mkdir(exist_ok=True)
+COMPLIANCE_BUSY = False
 
-# BATCH CONFIGURATION
-BATCH_INTERVAL = 2.0
-MAX_BATCH_SIZE = 15
-DEDUPLICATE = True
-
-event_queue = asyncio.Queue()
+# Shared async HTTP client
 _client: httpx.AsyncClient | None = None
 _idx = 0
 
-# ── Lifespan ────────────────────────────────────────────────────────
+# ── Lifespan (Startup/Shutdown) ─────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _client
+    
+    # 1. Setup vLLM Client
     _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
     print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
-    print("🚀 Filter Mode: MINIMAL (Only dropping [] empty lists)")
-    asyncio.create_task(batch_processor())
+    print(f"📁 Reports will be saved to {REPORT_DIR.resolve()}")
+
+    # 2. Check Ollama Status
+    print("🔌 Testing connection to Ollama...")
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as ol_client:
+            resp = await ol_client.get("http://localhost:11434/api/tags")
+            if resp.status_code == 200:
+                models = [m['name'] for m in resp.json().get('models', [])]
+                if any("nemotron-mini:4b" in m for m in models):
+                    print("✅ Ollama is ready and 'nemotron-mini:4b' is available.")
+                else:
+                    print("⚠️  WARNING: 'nemotron-mini:4b' not found in Ollama library!")
+                    print("👉 Run: ollama pull nemotron-mini:4b")
+            else:
+                print(f"⚠️  Ollama responded with error: {resp.status_code}")
+    except Exception as e:
+        print(f"❌ Could not reach Ollama: {e}")
+        print("   Ensure 'ollama serve' is running.")
+
     yield
+    
+    # Shutdown
     if _client:
         await _client.aclose()
 
-app = FastAPI(title="VLM Batching Proxy", lifespan=lifespan)
-
-# ── Safe Helpers ────────────────────────────────────────────────────
-def _fix_counts_only(obs):
-    """
-    Only fixes the '1000 people' bug. Does NOT delete any data.
-    """
-    if isinstance(obs, dict):
-        if "people" in obs and isinstance(obs["people"], list):
-            # Overwrite count with actual list length
-            obs["people_count"] = len(obs["people"])
-    return obs
+app = FastAPI(title="VLM Compliance Proxy", lifespan=lifespan)
 
 # ── Routes ──────────────────────────────────────────────────────────
 @app.post("/v1/chat/completions")
 async def proxy_chat_completions(request: Request):
+    global _idx, COMPLIANCE_BUSY
     body = await request.body()
     ts = datetime.now().strftime("%H:%M:%S")
 
-    # Forward to vLLM
+    # 1. Forward request to vLLM (Cosmos)
     try:
-        resp = await _client.post("/v1/chat/completions", content=body, headers={"Content-Type": "application/json"})
+        resp = await _client.post(
+            "/v1/chat/completions",
+            content=body,
+            headers={"Content-Type": "application/json"},
+        )
     except Exception as e:
+        print(f"[{ts}] ❌ vLLM unreachable: {e}")
         return Response(content=json.dumps({"error": str(e)}), status_code=502)
 
-    # Extract VLM Output
+    # 2. Extract VLM Response
     vlm_text = ""
     try:
         vllm_data = resp.json()
         vlm_text = vllm_data["choices"][0]["message"]["content"]
-    except:
+    except Exception:
         pass
 
+    # 3. Trigger Compliance Check (ONLY IF IDLE)
     if vlm_text:
-        # 1. Parse
-        raw_obs = _parse_vlm_output(vlm_text)
-        
-        # 2. Fix Count Only (Safe)
-        final_obs = _fix_counts_only(raw_obs)
-        
-        # 3. Queue (Send everything, let batch processor handle deduping)
-        event_queue.put_nowait((ts, json.dumps(final_obs)))
+        if COMPLIANCE_BUSY:
+            # Silent skip or minimal log to reduce noise
+            print(f"[{ts}] ⏳ Skipping compliance (busy)...", end="\r") 
+        else:
+            print(f"\n[{ts}] 🔍 VLM Output: {vlm_text[:50]}...")
+            observation = _parse_vlm_output(vlm_text)
+            
+            # Mark as busy and start task
+            COMPLIANCE_BUSY = True
+            asyncio.create_task(_run_compliance_safe(observation, _idx, ts))
+            _idx += 1
 
-    return Response(content=resp.content, status_code=resp.status_code, media_type=resp.headers.get("content-type"))
+    return Response(
+        content=resp.content,
+        status_code=resp.status_code,
+        media_type=resp.headers.get("content-type", "application/json"),
+    )
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_passthrough(request: Request, path: str):
     url = f"/{path}"
     body = await request.body()
     try:
-        resp = await _client.request(method=request.method, url=url, content=body, headers={k: v for k, v in request.headers.items() if k.lower() not in ("host", "content-length")})
+        resp = await _client.request(
+            method=request.method,
+            url=url,
+            content=body,
+            headers={k: v for k, v in request.headers.items() if k.lower() not in ("host", "content-length")},
+        )
         return Response(content=resp.content, status_code=resp.status_code, media_type=resp.headers.get("content-type"))
     except Exception as e:
         return Response(content=json.dumps({"error": str(e)}), status_code=502)
 
-# ── Batch Processor ─────────────────────────────────────────────────
-async def batch_processor():
-    last_processed_text = None
-    
-    while True:
-        first_item = await event_queue.get()
-        batch = [first_item]
-        
-        deadline = asyncio.get_event_loop().time() + BATCH_INTERVAL
-        while len(batch) < MAX_BATCH_SIZE:
-            timeout = deadline - asyncio.get_event_loop().time()
-            if timeout <= 0: break
-            try:
-                item = await asyncio.wait_for(event_queue.get(), timeout=timeout)
-                batch.append(item)
-            except asyncio.TimeoutError: break
-        
-        unique_observations = []
-        
-        for ts, text_obs in batch:
-            # 1. Skip strictly EMPTY lists (Fixes latency/hallucination)
-            if text_obs == "[]" or text_obs == "{}" or text_obs == "null":
-                continue
-            
-            # 2. Deduplicate
-            if DEDUPLICATE and text_obs == last_processed_text:
-                continue
-            
-            last_processed_text = text_obs
-            
-            # 3. Add to batch
-            unique_observations.append({
-                "time": ts,
-                "observation": json.loads(text_obs)
-            })
-
-        if not unique_observations:
-            continue
-
-        print(f"📦 Batch: {len(batch)} frames -> {len(unique_observations)} unique events")
-        
-        # Construct timeline
-        timeline_obs = {
-            "type": "timeline_batch",
-            "start_time": unique_observations[0]["time"],
-            "end_time": unique_observations[-1]["time"],
-            "events": unique_observations
-        }
-
-        asyncio.create_task(_run_compliance_batch(timeline_obs))
-
-async def _run_compliance_batch(observation: dict):
-    global _idx
-    try:
-        report = await asyncio.to_thread(check_compliance, observation, None)
-        status = report.get("overall_status", "unknown")
-        violations = report.get("violations", [])
-        
-        # Logging
-        if violations:
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] 🚨 {status.upper()} | {len(violations)} Violations")
-            for v in violations:
-                print(f"   ⛔ {v.get('rule', '?')}: {v.get('description', '')[:80]}")
-        else:
-             print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Compliant")
-
-        _idx += 1
-        save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
-        save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
-
-    except Exception as e:
-        print(f"❌ Error: {e}")
-
-def _parse_vlm_output(text: str):
+# ── Helpers ─────────────────────────────────────────────────────────
+def _parse_vlm_output(text: str) -> dict:
     try:
         return json.loads(text)
-    except:
-        cleaned = text.strip().removeprefix("```json").removeprefix("```").strip()
+    except json.JSONDecodeError:
+        cleaned = text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
         try:
             return json.loads(cleaned)
         except:
-            return {}
+            return {"raw_description": text}
+
+async def _run_compliance_safe(observation: dict, idx: int, ts: str):
+    global COMPLIANCE_BUSY
+    try:
+        print(f"[{ts}] ⚖️  Running Compliance Check...")
+        
+        # Run blocking check in thread
+        report = await asyncio.to_thread(check_compliance, observation, None)
+
+        status = report.get("overall_status", "unknown")
+        violations = report.get("violations", [])
+        
+        icon = "✅" if status == "compliant" else "🚨"
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] {icon} RESULT: {status.upper()} | Violations: {len(violations)}")
+        
+        # Save to disk
+        save_path = REPORT_DIR / f"report_{idx:04d}.json"
+        save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
+
+    except Exception as e:
+        print(f"[{ts}] ❌ Error: {e}")
+    finally:
+        COMPLIANCE_BUSY = False
 
 def main():
     global VLLM_BASE
@@ -191,6 +167,7 @@ def main():
     parser.add_argument("--vllm-url", type=str, default="http://localhost:8000")
     parser.add_argument("--host", type=str, default="0.0.0.0")
     args = parser.parse_args()
+
     VLLM_BASE = args.vllm_url
     print(f"🚀 Proxy listening on {args.host}:{args.port} -> vLLM {VLLM_BASE}")
     uvicorn.run(app, host=args.host, port=args.port, log_level="error")
