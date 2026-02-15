@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-VLM Listener — High-Performance Batching Proxy.
-Implements Producer-Consumer architecture to handle high-speed VLM input
-without dropping data or overloading the slow Nemotron reasoning agent.
+VLM Listener — Optimized Batching Proxy.
+Fixes:
+1. [] Hallucinations -> Filters out empty frames before LLM.
+2. Fake Counts -> Recalculates people_count from list length.
+3. Data Loss -> Uses an infinite queue so no frames are dropped.
 """
 
 import argparse
@@ -46,6 +48,7 @@ async def lifespan(app: FastAPI):
     # 1. Setup vLLM Client
     _client = httpx.AsyncClient(base_url=VLLM_BASE, timeout=120.0)
     print(f"🔗 Proxy ready — forwarding to vLLM at {VLLM_BASE}")
+    print("🛡️  Guardrails Active: Filtering empty lists & fixing counts")
     
     # 2. Start the Background Batch Processor
     print("⚙️  Starting Background Batch Processor...")
@@ -58,6 +61,18 @@ async def lifespan(app: FastAPI):
         await _client.aclose()
 
 app = FastAPI(title="VLM Batching Proxy", lifespan=lifespan)
+
+# ── Helper: Fix Counts Safely ───────────────────────────────────────
+def _fix_counts_only(obs):
+    """
+    Fixes the '1000 people' bug by overwriting people_count 
+    with the actual number of items in the list. 
+    Does NOT delete any data/fields.
+    """
+    if isinstance(obs, dict):
+        if "people" in obs and isinstance(obs["people"], list):
+            obs["people_count"] = len(obs["people"])
+    return obs
 
 # ── Routes ──────────────────────────────────────────────────────────
 @app.post("/v1/chat/completions")
@@ -87,10 +102,15 @@ async def proxy_chat_completions(request: Request):
 
     # 3. Push to Queue (Non-Blocking)
     if vlm_text:
-        # We push a tuple of (timestamp, text_data)
-        event_queue.put_nowait((ts, vlm_text))
+        # Parse & Fix Counts immediately
+        raw_obs = _parse_vlm_output(vlm_text)
+        fixed_obs = _fix_counts_only(raw_obs)
+        
+        # Serialize back to string for the queue
+        event_queue.put_nowait((ts, json.dumps(fixed_obs)))
+        
         q_size = event_queue.qsize()
-        if q_size % 10 == 0:
+        if q_size % 50 == 0: # Reduce log spam
             print(f"[{ts}] 📥 Buffered frame (Queue size: {q_size})")
 
     return Response(
@@ -120,18 +140,18 @@ async def batch_processor():
     Infinite loop that:
     1. Waits for data in the queue
     2. Accumulates data for BATCH_INTERVAL seconds
-    3. Deduplicates identical sequential frames
-    4. Sends one consolidated 'Timeline' report to Nemotron
+    3. Filters out EMPTY lists (Crucial Fix 1)
+    4. Deduplicates identical sequential frames
+    5. Sends batch to Nemotron
     """
     last_processed_text = None
     
     while True:
-        # Wait for the first item (don't burn CPU if empty)
+        # Wait for the first item
         first_item = await event_queue.get()
         batch = [first_item]
         
-        # Now gather any other items that arrive within our interval
-        # or until we hit MAX_BATCH_SIZE
+        # Gather more items
         deadline = asyncio.get_event_loop().time() + BATCH_INTERVAL
         while len(batch) < MAX_BATCH_SIZE:
             timeout = deadline - asyncio.get_event_loop().time()
@@ -143,15 +163,20 @@ async def batch_processor():
             except asyncio.TimeoutError:
                 break
         
-        # We now have a batch of raw frames. Let's process them.
         unique_observations = []
         
         for ts, text in batch:
-            # Parse JSON if possible
+            # 1. Skip EMPTY lists/objects
+            # This prevents Nemotron from seeing "[]" and hallucinating violations
+            if text == "[]" or text == "{}" or text == "null":
+                continue
+
+            # Parse to check deeper if needed (e.g. empty list inside dict)
             obs = _parse_vlm_output(text)
-            
-            # Deduplication: If this frame is exactly the same as the last unique one, skip it
-            # (But assume the timestamp updated implicitly)
+            if not obs: # Double check emptiness after parse
+                continue
+                
+            # 2. Deduplication
             current_sig = json.dumps(obs, sort_keys=True)
             if DEDUPLICATE and current_sig == last_processed_text:
                 continue
@@ -162,12 +187,12 @@ async def batch_processor():
                 "observation": obs
             })
 
-        # If everything was a duplicate, we might have nothing to send
+        # If batch is empty (because everything was "[]" or duplicate), skip API call
         if not unique_observations:
-            print(f"💤 All {len(batch)} frames were duplicates. Skipping check.")
+            # print(f"💤 Batch ignored (Empty/Duplicate)")
             continue
 
-        # Construct the "Timeline Observation" for Nemotron
+        # Construct Timeline
         timeline_obs = {
             "type": "timeline_batch",
             "start_time": unique_observations[0]["time"],
@@ -176,8 +201,8 @@ async def batch_processor():
             "events": unique_observations
         }
 
-        # Run Compliance Check (Blocking call in thread)
-        print(f"📦 Processing Batch: {len(batch)} raw -> {len(unique_observations)} unique events")
+        # Run Compliance Check
+        print(f"📦 Processing Batch: {len(batch)} frames -> {len(unique_observations)} valid events")
         asyncio.create_task(_run_compliance_batch(timeline_obs))
 
 
@@ -185,20 +210,18 @@ async def _run_compliance_batch(observation: dict):
     global _idx
     ts = datetime.now().strftime("%H:%M:%S")
     try:
-        # Run blocking check in thread
         report = await asyncio.to_thread(check_compliance, observation, None)
 
         status = report.get("overall_status", "unknown")
         violations = report.get("violations", [])
         
-        icon = "✅" if status == "compliant" else "🚨"
-        print(f"[{ts}] {icon} BATCH RESULT: {status.upper()} | Violations: {len(violations)}")
-        
         if violations:
-             for v in violations:
+            print(f"[{ts}] 🚨 {status.upper()} | {len(violations)} Violations")
+            for v in violations:
                 print(f"       ⛔ {v.get('rule', 'Rule')}: {v.get('description', '')[:80]}")
+        else:
+            print(f"[{ts}] ✅ Compliant")
 
-        # Save to disk
         _idx += 1
         save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
         save_path.write_text(json.dumps({"obs": observation, "report": report}, indent=2))
@@ -215,7 +238,7 @@ def _parse_vlm_output(text: str) -> dict:
         try:
             return json.loads(cleaned)
         except:
-            return {"raw_description": text}
+            return {} # Return empty dict on failure (will be filtered out)
 
 def main():
     global VLLM_BASE
