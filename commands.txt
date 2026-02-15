@@ -1,0 +1,30 @@
+# 1. Stop current vLLM
+
+pkill -f "vllm serve"
+
+
+
+# 2. Start vLLM with 8B model (from cache)
+
+cd ~/cosmos-reason2
+
+source .venv/bin/activate
+
+export TRITON_PTXAS_PATH="/usr/local/cuda/bin/ptxas"
+
+nohup vllm serve ~/.cache/huggingface/hub/models--nvidia--Cosmos-Reason2-8B/snapshots/7d6a645088b550bbd45daaf782e2430bba9c82bb \
+--allowed-local-media-path ~ \
+--max-model-len 8192 \
+--media-io-kwargs '{"video":{"num_frames":-1}}' \
+--reasoning-parser qwen3 \
+--port 8000 \
+--gpu-memory-utilization 0.35 \
+> /tmp/vllm-8b.log 2>&1 &
+
+
+
+# 3. Check progress (wait 30-60 seconds)
+
+tail -f /tmp/vllm-8b.log
+
+# Press Ctrl+C when you see "Uvicorn running"
