@@ -96,51 +96,52 @@ def load_ruleset(path: str | None) -> dict:
 
 
 def _build_prompt(observation: dict, ruleset: dict) -> str:
-    """Build the system + user prompt for Nemotron."""
-    rules_text = "\n".join(
-        f"  - [{r['id']}] {r['name']} (severity: {r['severity']}): {r['description']}"
-        for r in ruleset["rules"]
-    )
+    """
+    Upgraded Prompt: Forces the LLM to identify WHO is breaking the rule.
+    """
+    
+    # Extract just the relevant event text
+    events_text = []
+    if "events" in observation:
+        for e in observation["events"]:
+            obs_data = e.get("observation", {})
+            # We explicitly label the time to help the LLM sync events
+            events_text.append(f"- Time {e.get('time')}: {json.dumps(obs_data)}")
+    else:
+        events_text.append(json.dumps(observation))
 
-    return f"""You are a security compliance analysis AI. Your job is to evaluate a scene observation against a set of security rules and produce a structured JSON compliance report.
+    context_str = "\n".join(events_text)
 
-RULES ({ruleset.get('name', 'Unnamed Ruleset')}):
-{rules_text}
+    return f"""SYSTEM: You are a security guard. Analyze the OBSERVATION logs below.
+    
+RULES:
+1. Occupancy: Max 10 people.
+2. Restricted: No people in red zones.
+3. Suspicious: No unattended bags/weapons.
+4. Aggression: No fighting.
+5. PPE: Must wear safety gear (hard hat/vest) in work zones.
 
-OBSERVATION (from a VLM analyzing a live camera feed):
-{json.dumps(observation, indent=2)}
+INSTRUCTIONS:
+- If the logs are empty or say "null", return "compliant".
+- You MUST identify the NAME of the person involved in the violation.
+- If the name is null/unknown, use "Unknown Person".
 
-CURRENT TIME: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+OBSERVATION:
+{context_str}
 
-Analyze the observation against EVERY rule above. For each rule, determine if it is COMPLIANT or VIOLATED based on the observation data.
-
-Return ONLY a valid JSON object in this exact format:
+OUTPUT:
+Return JSON ONLY. Format:
 {{
-  "overall_status": "compliant" | "non_compliant",
-  "timestamp": "<current ISO timestamp>",
-  "rules_checked": <number of rules checked>,
-  "violations": [
-    {{
-      "rule_id": "<rule ID>",
-      "rule": "<rule name>",
-      "severity": "low" | "medium" | "high" | "critical",
-      "description": "<what was violated and why>",
-      "recommendation": "<suggested action>"
-    }}
-  ],
-  "compliant_rules": [
-    {{
-      "rule_id": "<rule ID>",
-      "rule": "<rule name>",
-      "status": "compliant",
-      "notes": "<brief explanation>"
-    }}
-  ],
-  "risk_score": <0-100 integer, higher = more risky>,
-  "summary": "<one paragraph summary of the compliance status>"
+  "overall_status": "compliant" or "non_compliant",
+  "violations": [ 
+    {{ 
+      "rule": "Rule Name", 
+      "subject": "Name of Person (or Unknown)", 
+      "description": "Short reason" 
+    }} 
+  ]
 }}
-
-Return ONLY valid JSON. No markdown fences, no extra text."""
+"""
 
 
 def check_compliance(observation: dict, ruleset_path: str | None = None) -> dict:

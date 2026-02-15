@@ -248,9 +248,13 @@ async def _run_compliance_batch(observation: dict):
         if violations:
             print(f"[{ts}] 🚨 {status.upper()} | {len(violations)} Violations")
             for v in violations:
-                print(f"       ⛔ {v.get('rule', 'Rule')}: {v.get('description', '')[:80]}")
-        else:
-            print(f"[{ts}] ✅ Compliant")
+                # Extract the new 'subject' field
+                who = v.get('subject', 'Unknown')
+                rule = v.get('rule', 'Rule')
+                desc = v.get('description', '')[:60]
+                
+                # Print: [Kenan Erol] ⛔ PPE: Missing hard hat
+                print(f"       👤 [{who}] ⛔ {rule}: {desc}")
 
         _idx += 1
         save_path = REPORT_DIR / f"batch_report_{_idx:04d}.json"
