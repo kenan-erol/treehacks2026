@@ -207,29 +207,35 @@ async def _run_compliance_async(observation: dict, idx: int, ts: str):
 
 
 # ────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────
 def main():
+    # FIX: Declare global immediately at the start of the function
+    global VLLM_BASE 
+
     parser = argparse.ArgumentParser(
         description="VLM Compliance Proxy — intercepts vLLM responses and runs Nemotron compliance checks"
     )
     parser.add_argument("--port", type=int, default=PROXY_PORT,
                         help=f"Proxy listen port (default: {PROXY_PORT})")
+    
+    # Now this usage of VLLM_BASE is legal because we declared it global above
     parser.add_argument("--vllm-url", type=str, default=VLLM_BASE,
                         help=f"vLLM backend URL (default: {VLLM_BASE})")
     parser.add_argument("--host", type=str, default="0.0.0.0",
                         help="Bind address (default: 0.0.0.0)")
     args = parser.parse_args()
 
-    global VLLM_BASE
+    # Update the global config with the argument
     VLLM_BASE = args.vllm_url
 
     print("╔══════════════════════════════════════════════════╗")
-    print("║       VLM Compliance Proxy                      ║")
+    print("║       VLM Compliance Proxy                       ║")
     print("╠══════════════════════════════════════════════════╣")
-    print(f"║  Proxy:  http://{args.host}:{args.port}              ║")
-    print(f"║  vLLM:   {VLLM_BASE:<39} ║")
+    print(f"║  Proxy:   http://{args.host}:{args.port}               ║")
+    print(f"║  vLLM:    {VLLM_BASE:<38} ║")
     print(f"║  Reports: {str(REPORT_DIR.resolve()):<38} ║")
     print("╠══════════════════════════════════════════════════╣")
-    print("║  Point your live-vlm-webui at this proxy port!  ║")
+    print("║  Point your live-vlm-webui at this proxy port!   ║")
     print("╚══════════════════════════════════════════════════╝")
     print()
 
